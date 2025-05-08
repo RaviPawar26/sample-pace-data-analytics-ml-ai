@@ -18,7 +18,7 @@ variable "DOMAIN_NAME" {
 
 variable "DOMAIN_EXECUTION_ROLE_ARN" {
   type    = string
-  default = "arn:aws:iam::633391536196:role/service-role/AmazonSageMakerDomainExecution"
+  default = "arn:aws:iam::985167257817:role/service-role/AmazonSageMakerDomainExecution"
 }
 
 # variable "KMS_KEY" {
