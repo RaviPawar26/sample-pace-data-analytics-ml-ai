@@ -15,7 +15,7 @@ resource "aws_ssm_parameter" "domain_id" {
   description = "The domain id"
   type        = "SecureString"
   value       = awscc_datazone_domain.domain.domain_id
-  key_id      = var.KMS_KEY
+  #   key_id      = var.KMS_KEY
 
   tags = {
     Application = var.APP
@@ -23,5 +23,3 @@ resource "aws_ssm_parameter" "domain_id" {
     Usage       = var.USAGE
   }
 }
-
-

@@ -2,32 +2,31 @@
 // SPDX-License-Identifier: MIT-0
 
 variable "APP" {
-
   type = string
+  default = "miw-iaac"
 }
 
 variable "ENV" {
-
-  type = string
+  type    = string
+  default = "sbx"
 }
 
 variable "DOMAIN_NAME" {
-
-  type = string
+  type    = string
+  default = "smlh-pilot-v1"
 }
 
 variable "DOMAIN_EXECUTION_ROLE_ARN" {
-
-  type = string
+  type    = string
+  default = "arn:aws:iam::633391536196:role/service-role/AmazonSageMakerDomainExecution"
 }
 
-variable "KMS_KEY" {
-
-  type = string
-}
+# variable "KMS_KEY" {
+#   type = string
+# }
 
 variable "USAGE" {
-
-  type = string
+  type    = string
+  default = "miw-test"
 }
 
