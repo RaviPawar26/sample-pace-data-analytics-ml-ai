@@ -3,13 +3,13 @@
 
 SHELL := /usr/bin/env bash -euo pipefail -c
 
-APP_NAME = ###APP_NAME###
-ENV_NAME = ###ENV_NAME###
-AWS_ACCOUNT_ID = ###AWS_ACCOUNT_ID###
-AWS_DEFAULT_REGION = ###AWS_DEFAULT_REGION###
-AWS_PRIMARY_REGION = ###AWS_PRIMARY_REGION###
-AWS_SECONDARY_REGION = ###AWS_SECONDARY_REGION###
-TF_S3_BACKEND_NAME = ###TF_S3_BACKEND_NAME###
+APP_NAME="SagemakerPilotIaac"
+ENV_NAME="sbx"
+AWS_ACCOUNT_ID="633391536196"
+AWS_DEFAULT_REGION="us-east-1"
+AWS_PRIMARY_REGION="us-east-1"
+AWS_SECONDARY_REGION="us-east-1"
+TF_S3_BACKEND_NAME="miw-codepipeline-633391536196-us-east-1"
 
 #################### Global Constants ####################
 
