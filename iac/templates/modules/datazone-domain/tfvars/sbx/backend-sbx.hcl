@@ -1,3 +1,3 @@
-bucket         = "minerva-snd-miw1-gef-tfstate-s3-bucket-985167257817-useast1"
+bucket         = "minerva-miw-sgml-poc"
 key            = "sagemaker/sbx/sagemaker.json"
 region         = "us-east-1"
