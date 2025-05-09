@@ -43,11 +43,11 @@ output "nat_gateway_eip" {
   value       = aws_eip.nat.public_ip
 }
 
-output "internet_gateway_id" {
-  
-  description = "The ID of the Internet Gateway"
-  value       = aws_internet_gateway.main.id
-}
+# output "internet_gateway_id" {
+#
+#   description = "The ID of the Internet Gateway"
+#   value       = aws_internet_gateway.main.id
+# }
 
 # output "smus_domain_execution_role_arn" {
 #   description = "ARN of the SMUS domain execution role"

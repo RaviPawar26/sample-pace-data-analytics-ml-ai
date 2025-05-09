@@ -37,7 +37,7 @@ resource "aws_nat_gateway" "main" {
     Name = "sagemaker-unified-studio-nat-gateway"
   }
 
-  depends_on = [aws_internet_gateway.main]
+  #depends_on = [aws_internet_gateway.main]
 }
 
 # Route table for private subnets
