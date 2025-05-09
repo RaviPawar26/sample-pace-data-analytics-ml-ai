@@ -6,7 +6,7 @@ resource "null_resource" "create_smus_domain" {
   provisioner "local-exec" {
     command = <<-EOT
       aws datazone create-domain \
-        --name "Cargill" \
+        --name "cargill2" \
         --description "SageMaker Unified Studio Domain" \
         --domain-execution-role "${local.SMUS_DOMAIN_EXECUTION_ROLE_ARN}" \
         --service-role "${local.SMUS_DOMAIN_SERVICE_ROLE_ARN}" \
