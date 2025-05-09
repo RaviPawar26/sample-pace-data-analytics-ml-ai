@@ -3,7 +3,7 @@
 
 SHELL := /usr/bin/env bash -euo pipefail -c
 
-APP_NAME="minerva-miw-snd-sgml-iaac"
+APP_NAME="miw"
 AWS_ACCOUNT_ID="904233109241"
 AWS_DEFAULT_REGION="us-east-1"
 ENV_NAME="snd"
