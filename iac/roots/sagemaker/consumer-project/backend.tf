@@ -2,13 +2,10 @@
 // SPDX-License-Identifier: MIT-0
 
 terraform {
-
   backend "s3" {
-
-    bucket         = "###TF_S3_BACKEND_NAME###-###AWS_ACCOUNT_ID###-###AWS_DEFAULT_REGION###"
-    key            = "###ENV_NAME###/consumer-project/terraform.tfstate"
-    dynamodb_table = "###TF_S3_BACKEND_NAME###-lock"
-    region         = "###AWS_PRIMARY_REGION###"
-    encrypt        = true
+    bucket         = "sndlh-904233109241-us-east-1"
+    key            = "snd/consumer-project/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = false
   }
 }
