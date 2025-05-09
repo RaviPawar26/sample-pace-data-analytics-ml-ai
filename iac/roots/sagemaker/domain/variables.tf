@@ -3,22 +3,18 @@
 
 variable "APP" {
   type = string
-  default = "miw-iaac"
 }
 
 variable "ENV" {
   type    = string
-  default = "sbx"
 }
 
 variable "AWS_PRIMARY_REGION" {
   type = string
-  default = "us-east-1"
 }
 
 variable "AWS_SECONDARY_REGION" {
   type = string
-  default = "us-east-1"
 }
 
 variable "SSM_KMS_KEY_ALIAS" {
