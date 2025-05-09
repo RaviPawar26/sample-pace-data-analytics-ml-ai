@@ -1,11 +1,11 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-APP                   = "###APP_NAME###"
-ENV                   = "###ENV_NAME###"
-AWS_PRIMARY_REGION    = "###AWS_PRIMARY_REGION###"
-AWS_SECONDARY_REGION  = "###AWS_SECONDARY_REGION###"
-SSM_KMS_KEY_ALIAS     = "###APP_NAME###-###ENV_NAME###-systems-manager-secret-key"
-DOMAIN_KMS_KEY_ALIAS  = "###APP_NAME###-###ENV_NAME###-glue-secret-key"
+APP                   = "miw"
+ENV                   = "snd"
+AWS_PRIMARY_REGION    = "us-east-1"
+AWS_SECONDARY_REGION  = "us-west-2"
+SSM_KMS_KEY_ALIAS     = "miw-snd-systems-manager-secret-key"
+DOMAIN_KMS_KEY_ALIAS  = "miw-snd-glue-secret-key"
 
 blueprint_ids = [
     "5rd9qqcc5hdujr",

@@ -3,5 +3,9 @@
 
 terraform {
   backend "s3" {
+    bucket         = "sndlh-904233109241-us-east-1"
+    key            = "snd/domain/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = false
   }
 }
