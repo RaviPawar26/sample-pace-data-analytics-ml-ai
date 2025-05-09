@@ -3,13 +3,13 @@
 
 SHELL := /usr/bin/env bash -euo pipefail -c
 
-APP_NAME="minerva-lh-snd-iaac"
+APP_NAME="minerva-miw-snd-sgml-iaac"
 AWS_ACCOUNT_ID="904233109241"
 AWS_DEFAULT_REGION="us-east-1"
 ENV_NAME="snd"
 AWS_PRIMARY_REGION="us-east-1"
 AWS_SECONDARY_REGION="us-east-1"
-TF_S3_BACKEND_NAME="minerva_lh_snd_sgml_poc"
+TF_S3_BACKEND_NAME="minerva-miw-snd-sgml-poc"
 
 #################### Global Constants ####################
 
