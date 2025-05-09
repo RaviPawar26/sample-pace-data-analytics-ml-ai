@@ -4,4 +4,4 @@
 APP                  = "miw"
 ENV                  = "snd"
 AWS_PRIMARY_REGION   = "us-east-1"
-AWS_SECONDARY_REGION = "us-east-1"
+AWS_SECONDARY_REGION = "us-west-2"
