@@ -9,7 +9,7 @@ AWS_DEFAULT_REGION="us-east-1"
 ENV_NAME="snd"
 AWS_PRIMARY_REGION="us-east-1"
 AWS_SECONDARY_REGION="us-east-1"
-TF_S3_BACKEND_NAME="sndlh904233109241"
+TF_S3_BACKEND_NAME="sndlh"
 
 #################### Global Constants ####################
 
