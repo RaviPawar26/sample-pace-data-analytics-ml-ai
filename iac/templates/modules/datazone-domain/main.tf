@@ -22,14 +22,3 @@ resource "aws_ssm_parameter" "domain_id" {
     Usage       = var.USAGE
   }
 }
-
-resource "aws_sagemaker_domain" "example" {
-  domain_name = "smlh-pilot-v2-sgdomain"
-  auth_mode   = "IAM"
-  vpc_id      = "vpc-07e447180f989a1cd"
-  subnet_ids  = ["subnet-022a3b61e0427a553", "subnet-03e9fb7f85cae3127", "subnet-0cd269668f9b0f230"]
-
-  default_user_settings {
-    execution_role = var.DOMAIN_EXECUTION_ROLE_ARN
-  }
-}
