@@ -31,11 +31,11 @@ output "private_subnet_cidrs" {
   value       = aws_subnet.private[*].cidr_block
 }
 
-output "nat_gateway_id" {
-
-  description = "The ID of the NAT Gateway"
-  value       = aws_nat_gateway.main.id
-}
+# output "nat_gateway_id" {
+#
+#   description = "The ID of the NAT Gateway"
+#   value       = aws_nat_gateway.main.id
+# }
 
 output "nat_gateway_eip" {
 
