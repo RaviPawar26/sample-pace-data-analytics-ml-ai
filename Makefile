@@ -13,7 +13,7 @@ TF_S3_BACKEND_NAME="sndlh"
 
 #################### Global Constants ####################
 
-ADMIN_ROLE = Admin
+ADMIN_ROLE = "service-role/codebuild-minerva-lh-snd-iaac-service-role"
 
 #################### Init Wizard ####################
 
