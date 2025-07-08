@@ -104,6 +104,12 @@ The solution uses a Glue batch data pipeline to load operational data from a Spl
 
 ![Cost](./docs/images/main/splunk_usecase.png)
 
+## Trading Data Lake
+
+### High level architecture
+
+![High Level Architecture](./docs/images/trading_data_lake.png)
+
 ## Next Steps
 
 - [Deploying DAIVI](./docs/main/solutions-deployment.md)
