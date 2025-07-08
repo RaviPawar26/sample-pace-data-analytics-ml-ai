@@ -199,8 +199,6 @@ make deploy-msk
 | build-lambda-layer | builds a zip for data generator lambda dependencies                             | verify dependencies_layer.zip exists at iac/roots/foundation/msk-serverless/data-generator                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | deploy-msk         | Deploy MSK cluster along with kafka tool on ec2 and lambda based data generator | 1. Verify {app}-{env}-msk-cluster is in active status <br> <br> 2. verify {app}-{env}-msk-producer-lambda lambda function <br> <br> 3. EC2 instance deployed with kafka ui tool --> {app}-{env}-msk-client. To view the MSK cluster topics and messages, update the ec2 security group to allow traffic from your public ip and access the UI on EC2 public ip on port 9000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-## NAT gateway
-
 ## 2. **IAM Identity Center**
 
 The IAM Identity Center module enables deployment of either:
@@ -724,6 +722,7 @@ make deploy-project-config
 make billing-grant-producer-s3tables-catalog-permissions
 make inventory-grant-producer-s3tables-catalog-permissions
 make splunk-grant-producer-s3tables-catalog-permissions
+make price-grant-producer-s3tables-catalog-permissions
 ```
 
 | Target                                                | Result                                                                                                                   | Verification                                                                                                        |
@@ -732,6 +731,7 @@ make splunk-grant-producer-s3tables-catalog-permissions
 | billing-grant-producer-s3tables-catalog-permissions   | Grants Lake Formation access permissions to a project producer role for querying billing data through S3 table catalog   | Verify that the project role is granted lake formation permissions                                                  |
 | inventory-grant-producer-s3tables-catalog-permissions | Grants Lake Formation access permissions to a project producer role for querying inventory data through S3 table catalog | Verify that the project role is granted lake formation permissions                                                  |
 | splunk-grant-producer-s3tables-catalog-permissions    | Grants Lake Formation access permissions to a project producer role for querying splunk data through S3 table catalog    | Verify that the project role is granted lake formation permissions                                                  |
+| price-grant-producer-s3tables-catalog-permissions     | Grants Lake Formation access permissions to a project producer role for querying price data through S3 table catalog     | Verify that the project role is granted lake formation permissions                                                  |
 
 ---
 
@@ -756,21 +756,6 @@ make deploy-datazone-custom-project
 | deploy-datazone-producer-project | Deploy Datazone Producer Project      | Verify that Datazone **Producer** project is created in the Datazone domain **Exchange**                                                                                 |
 | deploy-datazone-consumer-project | Deploy Datazone Consumer Project      | Verify that Datazone **Consumer** project is created in the Datazone domain **Exchange**                                                                                 |
 | deploy-datazone-custom-project   | Deploy Datazone Consumer Project      | Verify that Datazone **Custom** project is created in the Datazone domain **Exchange**                                                                                   |
-
----
-
-## 21. **Snowflake Connection**
-
-This module deploys a Snowflake connection for SageMaker Lakehouse, enabling data access between SageMaker Studio UI and Snowflake.
-
-#### Prerequisites
-
-Before deploying this module, you need:
-
-1. A Snowflake account with appropriate access credentials
-2. Snowflake objects (database, warehouse, table, schema) must be created and accessible. For detailed instructions on creating and setting up free trial Snowflake for use with SageMaker, refer to [Amazon SageMaker with Snowflake as datasource](https://github.com/aws-samples/amazon-sagemaker-w-snowflake-as-datasource/blob/main/snowflake-instructions.md).
-   > [!IMPORTANT]
-   > All Snowflake object names (database, schema, table, columns names, warehouse name) must be in lowercase due to current limitations in Athena's Snowflake connector.
 
 ---
 
