@@ -769,8 +769,8 @@ Before deploying this module, you need:
 
 1. A Snowflake account with appropriate access credentials
 2. Snowflake objects (database, warehouse, table, schema) must be created and accessible. For detailed instructions on creating and setting up free trial Snowflake for use with SageMaker, refer to [Amazon SageMaker with Snowflake as datasource](https://github.com/aws-samples/amazon-sagemaker-w-snowflake-as-datasource/blob/main/snowflake-instructions.md).
-   > [!IMPORTANT]
-   > All Snowflake object names (database, schema, table, columns names, warehouse name) must be in lowercase due to current limitations in Athena's Snowflake connector.
+> [!IMPORTANT]
+> All Snowflake object names (database, schema, table, columns names, warehouse name) must be in lowercase due to current limitations in Athena's Snowflake connector.
 
 For information about Athena-Snowflake connector limitations, see [AWS documentation](https://docs.aws.amazon.com/athena/latest/ug/connectors-snowflake.html#connectors-snowflake-limitations).
 
@@ -783,48 +783,59 @@ Before deploying the connection, you need to ensure your Snowflake objects are p
    - Navigate to your Snowflake account URL (e.g., `https://youraccount.snowflakecomputing.com`)
    - Login with your admin credentials
 
-2. **Create Lowercase Database and Schema**:
-
-   - Open a Snowflake worksheet and execute:
+2. **Create Lowercase Database (For all commands below, open a Snowflake worksheet and execute)**:
 
    ```sql
-   -- Create database and schema with lowercase names
    CREATE DATABASE IF NOT EXISTS "daivi_db";
+   ```
+
+3. **Use the Database**:
+
+   ```sql
    USE DATABASE "daivi_db";
+   ```
+
+4. **Create Lowercase Schema**:
+
+   ```sql
    CREATE SCHEMA IF NOT EXISTS "daivi_schema";
+   ```
+
+5. **Use the Schema**:
+
+   ```sql
    USE SCHEMA "daivi_schema";
    ```
 
-3. **Create Sample Table with Lowercase Name**:
+6. **Create Sample Table with Lowercase Name**:
 
    ```sql
-   -- Create a sample table with lowercase name
    CREATE OR REPLACE TABLE "daivi_sample_table" (
-     "id" INTEGER,
-     "name" STRING,
-     "value" FLOAT
+   "id" INTEGER,
+   "name" STRING,
+   "value" FLOAT
    );
-
-   -- Insert sample data
-   INSERT INTO "daivi_sample_table" VALUES
-     (1, 'item1', 10.5),
-     (2, 'item2', 20.3),
-     (3, 'item3', 30.7);
    ```
 
-4. **Create or Verify Lowercase Warehouse**:
+7. **Insert Sample Data into Table**:
 
    ```sql
-   -- Create a warehouse with lowercase name
+   INSERT INTO "daivi_sample_table" VALUES
+   (1, 'item1', 10.5),
+   (2, 'item2', 20.3),
+   (3, 'item3', 30.7);
+   ```
+
+8. **Create Lowercase Warehouse**:
+   ```sql
    CREATE WAREHOUSE IF NOT EXISTS "daivi_wh"
    WITH WAREHOUSE_SIZE = 'XSMALL'
    AUTO_SUSPEND = 60
    AUTO_RESUME = TRUE;
    ```
 
-5. **Test Query**:
+9. **Highligth all of the fields below and test the query**:
    ```sql
-   -- Test query to verify data access
    USE WAREHOUSE "daivi_wh";
    USE DATABASE "daivi_db";
    USE SCHEMA "daivi_schema";
@@ -872,7 +883,7 @@ After successful deployment, you should verify that the Snowflake connection is 
 4. Click on "Connections" in the left sidebar
 5. **Note**: It may take 3-5 minutes for the connection to be fully established and appear in SageMaker Unified Studio
 6. You should see your Snowflake connection in the list of available connections
-7. You can now use this connection to query Snowflake data directly from SageMaker notebooks and DataZone projects
+7. **Note**: Please execute the next module if you want the querying to work. If you don't want to run Module 22 you need to execute `make update-kms-policy-for-lakehouse` command to provide the role that is used for Federated Querying access to KMS keys that encrypt Glue catalogs. Only run this make command once either here or, as instructed, in the next module. After that you can now use this connection to query Snowflake data directly from SageMaker notebooks and DataZone projects
 
 ---
 
@@ -883,20 +894,21 @@ This module creates a Glue job that generates synthetic trading data and loads i
 #### Prerequisites
 
 > [!CAUTION]
-> Module 18 (Snowflake Connection) must be deployed successfully before proceeding with this module.
+> Module 21 (Snowflake Connection) must be deployed successfully before proceeding with this module.
 
 #### To deploy the module:
 
 ```
 make deploy-z-etl-snowflake
-make start-trading-data-generator-job (wait for glue job to complete)
+make start-snowflake-job (wait for glue job to complete)
 make grant-lake-formation-snowflake-catalog (wait for snowflake catalog to be created in Lake Formation console before running this command)
+make update-kms-policy-for-lakehouse
 ```
 
 | Target                                 | Result                                                                               | Verification                                                                         |
 | -------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | deploy-z-etl-snowflake                 | Creates a Glue job that generates synthetic trading data and loads it into Snowflake | Verify the following Glue job is created: <br> 1. {app}-{env}-trading-data-generator |
-| start-trading-data-generator-job       | Runs the Glue job to generate and load trading data into Snowflake                   | Verify the Glue job starts and completes successfully                                |
+| start-snowflake-job       | Runs the Glue job to generate and load trading data into Snowflake                   | Verify the Glue job starts and completes successfully                                |
 | grant-lake-formation-snowflake-catalog | Grants Lake Formation permissions to access Snowflake data through catalog           | Verify that the permission is added in Lake Formation                                |
 | update-kms-policy-for-lakehouse        | Updates the KMS policy to allow Lake Formation to access the KMS key                 | Verify that the KMS policy is updated                                                |
 

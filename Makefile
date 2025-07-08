@@ -1086,16 +1086,6 @@ grant-lake-formation-price-s3-table-catalog:
 		--permissions-with-grant-option ALL \
 		--region "$(AWS_PRIMARY_REGION)"
 
-price-grant-producer-s3tables-catalog-permissions:
-	@echo "Grant Producer S3Tables Catalog Permissions"
-	$(eval producer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
-	aws lakeformation grant-permissions \
-    	--principal DataLakePrincipalIdentifier="$(producer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-price\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"price\"}}" \
-    	--permissions ALL \
-    	--region "$(AWS_PRIMARY_REGION)"
-	@echo "Finished granting Producer S3Tables Catalog Permissions"
-
 start-price-hive-data-quality-ruleset:
 	@echo "Starting Price Hive Data Quality Ruleset"
 	aws glue start-data-quality-ruleset-evaluation-run \
@@ -1259,6 +1249,16 @@ splunk-grant-consumer-s3tables-catalog-permissions:
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished Granting Consumer S3Tables Catalog Permissions"
+
+price-grant-producer-s3tables-catalog-permissions:
+	@echo "Grant Producer S3Tables Catalog Permissions"
+	$(eval producer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
+	aws lakeformation grant-permissions \
+    	--principal DataLakePrincipalIdentifier="$(producer_role_arn)" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-price\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"price\"}}" \
+    	--permissions ALL \
+    	--region "$(AWS_PRIMARY_REGION)"
+	@echo "Finished granting Producer S3Tables Catalog Permissions"
 
 #################### SageMaker Unified Studio Lakehouse Snowflake Connection for Producer ####################
 
