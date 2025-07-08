@@ -8,7 +8,7 @@ data "aws_ssm_parameter" "smus_domain_id" {
 
 data "aws_ssm_parameter" "sagemaker_vpc_private_subnet_ids" {
 
-  name = "/${var.APP}/${var.ENV}/smus_domain_private_subnet_ids"
+  name = "/${var.APP}/${var.ENV}/vpc_private_subnet_ids"
 }
 
 data "aws_ssm_parameter" "smus_projects_bucket_s3_url" {
