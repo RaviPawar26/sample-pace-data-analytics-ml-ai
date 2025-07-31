@@ -13,16 +13,5 @@ terraform {
 provider "aws" {
 
   alias  = "primary"
-  region = var.AWS_PRIMARY_REGION
-}
-
-provider "aws" {
-
-  alias  = "secondary"
-  region = var.AWS_SECONDARY_REGION
-}
-
-provider "aws" {
-
-  region = var.AWS_PRIMARY_REGION
+  region = var.REGION
 }

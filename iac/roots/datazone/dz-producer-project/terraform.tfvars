@@ -1,6 +1,7 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+AWS_ACCOUNT_ID                  = "###AWS_ACCOUNT_ID###"
 APP                             = "###APP_NAME###"
 ENV                             = "###ENV_NAME###"
 AWS_PRIMARY_REGION              = "###AWS_PRIMARY_REGION###"
@@ -24,7 +25,7 @@ GLUE_DATASOURCE_CONFIGURATION = {
     glue_run_configuration = {
         auto_import_data_quality_result = true
         relational_filter_configurations = [{
-            database_name = "###APP_NAME###_###ENV_NAME###_billing"
+            database_name = "finops_billing_s3_glue_s3"
             filter_expression = [{
                 expression = "*"
                 type = "INCLUDE"

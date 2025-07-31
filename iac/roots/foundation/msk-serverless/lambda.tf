@@ -111,6 +111,7 @@ data "archive_file" "generator_lambda_zip" {
 module "data_generator_lambda" {
   source = "../../../templates/modules/lambda"
 
+  region = var.AWS_PRIMARY_REGION
   function_name = "${var.APP}-${var.ENV}-msk-producer-lambda"
   handler_name  = "mskProducer.lambda_handler"
   description   = "Lambda function to generate financial data events"

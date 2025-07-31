@@ -38,7 +38,6 @@ CUSTOM_RESOURCE_LINKS            = {
     }
 }
 
-
 DATASOURCE_NAME = "custom_glue_data"
 DATASOURCE_TYPE = "GLUE"
 
@@ -48,7 +47,7 @@ GLUE_DATASOURCE_CONFIGURATION = {
     glue_run_configuration = {
         auto_import_data_quality_result = true
         relational_filter_configurations = [{
-            database_name = "###APP_NAME###_###ENV_NAME###_billing"
+            database_name = "finops_billing_s3_glue_s3"
             filter_expression = [{
                 expression = "*"
                 type = "INCLUDE"

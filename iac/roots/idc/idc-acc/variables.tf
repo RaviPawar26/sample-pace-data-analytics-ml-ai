@@ -1,6 +1,11 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+variable "AWS_ACCOUNT_ID" {
+
+  type = string
+}
+
 variable "APP" {
 
   type = string
@@ -62,4 +67,9 @@ variable "LAMBDA_BUCKET" {
 variable "LAMBDA_KEY" {
   description = "S3 key (path) to the zip file"
   default     = "lambda/instance_creation"
+}
+
+variable "S3_KMS_KEY_ALIAS" {
+
+  type = string
 }

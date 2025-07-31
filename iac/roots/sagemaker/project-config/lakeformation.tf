@@ -9,7 +9,7 @@ resource "aws_lakeformation_permissions" "billing_producer_default_catalog_datab
 
   database {
     catalog_id = local.account_id
-    name = "${var.APP}_${var.ENV}_billing"
+    name = "finops_billing_s3_glue_s3"
   }
 }
 
@@ -21,8 +21,8 @@ resource "aws_lakeformation_permissions" "billing_producer_default_catalog_hive_
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_billing"
-    name          = "${var.APP}_${var.ENV}_billing_hive"
+    database_name = "finops_billing_s3_glue_s3"
+    name          = "finops_billing_s3_glue_s3_hive"
   }
 }
 
@@ -34,8 +34,8 @@ resource "aws_lakeformation_permissions" "billing_producer_default_catalog_icebe
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_billing"
-    name          = "${var.APP}_${var.ENV}_billing_iceberg_static"
+    database_name = "finops_billing_s3_glue_s3"
+    name          = "finops_billing_s3_glue_s3_iceberg_static"
   }
 }
 
@@ -47,8 +47,8 @@ resource "aws_lakeformation_permissions" "billing_producer_default_catalog_icebe
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_billing"
-    name          = "${var.APP}_${var.ENV}_billing_iceberg_dynamic"
+    database_name = "finops_billing_s3_glue_s3"
+    name          = "finops_billing_s3_glue_s3_iceberg_dynamic"
   }
 }
 
@@ -183,7 +183,7 @@ resource "aws_lakeformation_permissions" "inventory_producer_default_catalog_dat
 
   database {
     catalog_id = local.account_id
-    name = "${var.APP}_${var.ENV}_inventory"
+    name = "finops_inventory_s3_glue_s3"
   }
 }
 
@@ -195,8 +195,8 @@ resource "aws_lakeformation_permissions" "inventory_producer_default_catalog_hiv
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_inventory"
-    name          = "${var.APP}_${var.ENV}_inventory_hive"
+    database_name = "finops_inventory_s3_glue_s3"
+    name          = "finops_inventory_s3_glue_s3_hive"
   }
 }
 
@@ -208,8 +208,8 @@ resource "aws_lakeformation_permissions" "inventory_producer_default_catalog_ice
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_inventory"
-    name          = "${var.APP}_${var.ENV}_inventory_iceberg_static"
+    database_name = "finops_inventory_s3_glue_s3"
+    name          = "finops_inventory_s3_glue_s3_iceberg_static"
   }
 }
 
@@ -221,8 +221,8 @@ resource "aws_lakeformation_permissions" "inventory_producer_default_catalog_ice
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_inventory"
-    name          = "${var.APP}_${var.ENV}_inventory_iceberg_dynamic"
+    database_name = "finops_inventory_s3_glue_s3"
+    name          = "finops_inventory_s3_glue_s3_iceberg_dynamic"
   }
 }
 
@@ -331,7 +331,7 @@ resource "aws_lakeformation_permissions" "splunk_producer_default_catalog_databa
 
   database {
     catalog_id = local.account_id
-    name = "${var.APP}_${var.ENV}_splunk"
+    name = "finops_usage_splunk_glue_s3"
   }
 }
 
@@ -343,8 +343,8 @@ resource "aws_lakeformation_permissions" "splunk_producer_default_catalog_iceber
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_splunk"
-    name          = "${var.APP}_${var.ENV}_splunk_iceberg"
+    database_name = "finops_usage_splunk_glue_s3"
+    name          = "finops_usage_splunk_glue_s3_iceberg"
   }
 }
 
@@ -426,7 +426,7 @@ resource "aws_lakeformation_permissions" "zetl_ddb_default_catalog_database_perm
 
   database {
     catalog_id = local.account_id
-    name = "${var.APP}_${var.ENV}_equity_orders_zetl_ddb"
+    name = "equity_order_dd_zetl_s3"
   }
 }
 
@@ -438,7 +438,7 @@ resource "aws_lakeformation_permissions" "zetl_ddb_default_catalog_table_permiss
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_equity_orders_zetl_ddb"
+    database_name = "equity_order_dd_zetl_s3"
     name          = "${var.APP}_${var.ENV}_equity_orders_db_table"
   }
 }
@@ -451,7 +451,7 @@ resource "aws_lakeformation_permissions" "price_producer_default_catalog_databas
 
   database {
     catalog_id = local.account_id
-    name = "${var.APP}_${var.ENV}_price"
+    name = "equity_price_s3_glue_s3"
   }
 }
 
@@ -463,8 +463,8 @@ resource "aws_lakeformation_permissions" "price_producer_default_catalog_hive_ta
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_price"
-    name          = "${var.APP}_${var.ENV}_price_hive"
+    database_name = "equity_price_s3_glue_s3"
+    name          = "equity_price_s3_glue_s3_hive"
   }
 }
 
@@ -476,8 +476,8 @@ resource "aws_lakeformation_permissions" "price_producer_default_catalog_iceberg
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_price"
-    name          = "${var.APP}_${var.ENV}_price_iceberg"
+    database_name = "equity_price_s3_glue_s3"
+    name          = "equity_price_s3_glue_s3_iceberg"
   }
 }
 
@@ -489,7 +489,7 @@ resource "aws_lakeformation_permissions" "trade_producer_default_catalog_databas
 
   database {
     catalog_id = local.account_id
-    name = "${var.APP}_${var.ENV}_trade"
+    name = "equity_trade_s3_glue_s3"
   }
 }
 
@@ -501,8 +501,8 @@ resource "aws_lakeformation_permissions" "trade_producer_default_catalog_hive_ta
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_trade"
-    name          = "${var.APP}_${var.ENV}_trade_hive"
+    database_name = "equity_trade_s3_glue_s3"
+    name          = "equity_trade_s3_glue_s3_hive"
   }
 }
 
@@ -514,7 +514,45 @@ resource "aws_lakeformation_permissions" "trade_producer_default_catalog_iceberg
 
   table {
     catalog_id    = local.account_id
-    database_name = "${var.APP}_${var.ENV}_trade"
-    name          = "${var.APP}_${var.ENV}_trade_iceberg"
+    database_name = "equity_trade_s3_glue_s3"
+    name          = "equity_trade_s3_glue_s3_iceberg"
+  }
+}
+
+resource "aws_lakeformation_permissions" "equity_trade_producer_default_catalog_database_permissions" {
+
+  principal   = local.PRODUCER_ROLE
+  permissions = ["DESCRIBE", "CREATE_TABLE", "ALTER", "DROP"]
+  permissions_with_grant_option = ["DESCRIBE", "CREATE_TABLE", "ALTER", "DROP"]
+
+  database {
+    catalog_id = local.account_id
+    name = "equity_trade_msk_glue_s3"
+  }
+}
+
+resource "aws_lakeformation_permissions" "equity_trade_producer_default_catalog_hive_table_permissions" {
+
+  principal   = local.PRODUCER_ROLE
+  permissions = ["SELECT", "INSERT", "DELETE", "DESCRIBE", "ALTER", "DROP"]
+  permissions_with_grant_option = ["SELECT", "INSERT", "DELETE", "DESCRIBE", "ALTER", "DROP"]
+
+  table {
+    catalog_id    = local.account_id
+    database_name = "equity_trade_msk_glue_s3"
+    name          = "equity_trade_msk_glue_s3_hive"
+  }
+}
+
+resource "aws_lakeformation_permissions" "equity_trade_producer_default_catalog_iceberg_table_permissions" {
+
+  principal   = local.PRODUCER_ROLE
+  permissions = ["SELECT", "INSERT", "DELETE", "DESCRIBE", "ALTER", "DROP"]
+  permissions_with_grant_option = ["SELECT", "INSERT", "DELETE", "DESCRIBE", "ALTER", "DROP"]
+
+  table {
+    catalog_id    = local.account_id
+    database_name = "equity_trade_msk_glue_s3"
+    name          = "equity_trade_msk_glue_s3_iceberg"
   }
 }

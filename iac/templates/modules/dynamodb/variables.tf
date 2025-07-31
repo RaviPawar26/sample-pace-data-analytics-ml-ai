@@ -81,5 +81,7 @@ variable "csv_header_list" {
 }
 
 variable "dynamodb_kms_key_arn" {
-  type = string
+  type        = string
+  default     = null
+  description = "KMS key ARN for DynamoDB encryption. If null, uses AWS managed key."
 }

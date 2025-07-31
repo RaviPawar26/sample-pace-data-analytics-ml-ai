@@ -11,22 +11,12 @@ variable "ENV" {
   type = string
 }
 
-variable "AWS_PRIMARY_REGION" {
+variable "REGION" {
 
   type = string
 }
 
-variable "AWS_SECONDARY_REGION" {
-
-  type = string
-}
-
-variable "S3_PRIMARY_KMS_KEY_ALIAS" {
-
-  type = string
-}
-
-variable "S3_SECONDARY_KMS_KEY_ALIAS" {
+variable "KMS_KEY_ALIAS" {
 
   type = string
 }

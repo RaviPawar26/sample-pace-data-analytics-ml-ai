@@ -12,7 +12,7 @@ data "aws_ssm_parameter" "datazone_domain_id" {
 }
 
 locals {
-  datalake  = "s3://${var.APP}-${var.ENV}-glue-temp-primary"
+  datalake  = "s3://${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-glue-temp"
   domain_id = data.aws_ssm_parameter.datazone_domain_id.value
 }
 

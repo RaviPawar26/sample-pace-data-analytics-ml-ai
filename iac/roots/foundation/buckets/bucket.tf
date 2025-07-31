@@ -1,113 +1,64 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-data "aws_kms_key" "s3_primary_key" {
+data "aws_kms_key" "kms_key" {
 
-  provider = aws.primary
-
-  key_id   = "alias/${var.S3_PRIMARY_KMS_KEY_ALIAS}"
-}
-
-data "aws_kms_key" "s3_secondary_key" {
-
-  provider = aws.secondary
-
-  key_id   = "alias/${var.S3_SECONDARY_KMS_KEY_ALIAS}"
+  key_id   = "alias/${var.KMS_KEY_ALIAS}"
 }
 
 module "glue_scripts_bucket" {
 
   source = "../../../templates/modules/bucket"
 
-  providers = {
-    aws.primary   = aws.primary
-    aws.secondary = aws.secondary
-  }
-
-  RESOURCE_PREFIX              = "${var.APP}-${var.ENV}-glue-scripts"
-  BUCKET_NAME_PRIMARY_REGION   = "primary"
-  BUCKET_NAME_SECONDARY_REGION = "secondary"
-  PRIMARY_CMK_ARN              = data.aws_kms_key.s3_primary_key.arn
-  SECONDARY_CMK_ARN            = data.aws_kms_key.s3_secondary_key.arn
-  APP                          = var.APP
-  ENV                          = var.ENV
-  USAGE                        = "glue"
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "glue-scripts"
+  USAGE     = "glue"  
+  CMK_ARN   = data.aws_kms_key.kms_key.arn
 }
 
 module "glue_jars_bucket" {
 
   source = "../../../templates/modules/bucket"
 
-  providers = {
-    aws.primary   = aws.primary
-    aws.secondary = aws.secondary
-  }
-
-  RESOURCE_PREFIX              = "${var.APP}-${var.ENV}-glue-jars"
-  BUCKET_NAME_PRIMARY_REGION   = "primary"
-  BUCKET_NAME_SECONDARY_REGION = "secondary"
-  PRIMARY_CMK_ARN              = data.aws_kms_key.s3_primary_key.arn
-  SECONDARY_CMK_ARN            = data.aws_kms_key.s3_secondary_key.arn
-  APP                          = var.APP
-  ENV                          = var.ENV
-  USAGE                        = "glue"
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "glue-jars"
+  USAGE     = "glue"
+  CMK_ARN   = data.aws_kms_key.kms_key.arn
 }
 
 module "glue_spark_logs_bucket" {
 
   source = "../../../templates/modules/bucket"
 
-  providers = {
-    aws.primary   = aws.primary
-    aws.secondary = aws.secondary
-  }
-
-  RESOURCE_PREFIX              = "${var.APP}-${var.ENV}-glue-spark-logs"
-  BUCKET_NAME_PRIMARY_REGION   = "primary"
-  BUCKET_NAME_SECONDARY_REGION = "secondary"
-  PRIMARY_CMK_ARN              = data.aws_kms_key.s3_primary_key.arn
-  SECONDARY_CMK_ARN            = data.aws_kms_key.s3_secondary_key.arn
-  APP                          = var.APP
-  ENV                          = var.ENV
-  USAGE                        = "glue"
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "glue-spark-logs"
+  USAGE     = "glue"
+  CMK_ARN   = data.aws_kms_key.kms_key.arn
 }
 
 module "glue_temp_bucket" {
 
   source = "../../../templates/modules/bucket"
 
-  providers = {
-    aws.primary   = aws.primary
-    aws.secondary = aws.secondary
-  }
-
-  RESOURCE_PREFIX              = "${var.APP}-${var.ENV}-glue-temp"
-  BUCKET_NAME_PRIMARY_REGION   = "primary"
-  BUCKET_NAME_SECONDARY_REGION = "secondary"
-  PRIMARY_CMK_ARN              = data.aws_kms_key.s3_primary_key.arn
-  SECONDARY_CMK_ARN            = data.aws_kms_key.s3_secondary_key.arn
-  APP                          = var.APP
-  ENV                          = var.ENV
-  USAGE                        = "glue"
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "glue-temp"
+  USAGE     = "glue"
+  CMK_ARN   = data.aws_kms_key.kms_key.arn
 }
 
 module "athena_output_bucket" {
 
   source = "../../../templates/modules/bucket"
   
-  providers = {
-    aws.primary   = aws.primary
-    aws.secondary = aws.secondary
-  }
-
-  RESOURCE_PREFIX              = "${var.APP}-${var.ENV}-athena-output"
-  BUCKET_NAME_PRIMARY_REGION   = "primary"
-  BUCKET_NAME_SECONDARY_REGION = "secondary"
-  PRIMARY_CMK_ARN              = data.aws_kms_key.s3_primary_key.arn
-  SECONDARY_CMK_ARN            = data.aws_kms_key.s3_secondary_key.arn
-  APP                          = var.APP
-  ENV                          = var.ENV
-  USAGE                        = "athena"
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "athena-output"
+  USAGE     = "athena"
+  CMK_ARN   = data.aws_kms_key.kms_key.arn
 }
 
 locals {
@@ -118,36 +69,20 @@ module "smus_projects_bucket" {
 
   source = "../../../templates/modules/bucket"
 
-  providers = {
-    aws.primary   = aws.primary
-    aws.secondary = aws.secondary
-  }
-
-  RESOURCE_PREFIX              = local.smus_projects_bucket_name
-  BUCKET_NAME_PRIMARY_REGION   = "primary"
-  BUCKET_NAME_SECONDARY_REGION = "secondary"
-  PRIMARY_CMK_ARN              = data.aws_kms_key.s3_primary_key.arn
-  SECONDARY_CMK_ARN            = data.aws_kms_key.s3_secondary_key.arn
-  APP                          = var.APP
-  ENV                          = var.ENV
-  USAGE                        = "smus_projects"
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "amazon-sagemaker"
+  USAGE     = "smus_projects"
+  CMK_ARN   = data.aws_kms_key.kms_key.arn
 }
 
 module "smus_cfn_bucket" {
 
   source = "../../../templates/modules/bucket"
   
-  providers = {
-    aws.primary   = aws.primary
-    aws.secondary = aws.secondary
-  }
-
-  RESOURCE_PREFIX              = "${var.APP}-${var.ENV}-smus-project-cfn-template"
-  BUCKET_NAME_PRIMARY_REGION   = "primary"
-  BUCKET_NAME_SECONDARY_REGION = "secondary"
-  PRIMARY_CMK_ARN              = data.aws_kms_key.s3_primary_key.arn
-  SECONDARY_CMK_ARN            = data.aws_kms_key.s3_secondary_key.arn
-  APP                          = var.APP
-  ENV                          = var.ENV
-  USAGE                        = "smus_projects"
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "smus-project-cfn-template"
+  USAGE     = "smus_projects"
+  CMK_ARN   = data.aws_kms_key.kms_key.arn
 }

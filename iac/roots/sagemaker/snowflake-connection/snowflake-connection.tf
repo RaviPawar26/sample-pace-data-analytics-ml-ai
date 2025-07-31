@@ -72,8 +72,8 @@ resource "aws_secretsmanager_secret_version" "snowflake_credentials_secret_versi
 
   secret_id = aws_secretsmanager_secret.snowflake_credentials_secret.id
   secret_string = jsonencode({
-    USERNAME = var.SNOWFLAKE_USERNAME
-    PASSWORD = var.SNOWFLAKE_PASSWORD
+    username = var.SNOWFLAKE_USERNAME
+    password = var.SNOWFLAKE_PASSWORD
   })
 }
 

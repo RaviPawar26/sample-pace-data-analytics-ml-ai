@@ -1,13 +1,25 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+data "aws_kms_key" "s3_kms_key" {
+
+  key_id   = "alias/${var.S3_KMS_KEY_ALIAS}"
+}
+
 data "aws_kms_key" "ssm_kms_key" {
 
   key_id = "alias/${var.SSM_KMS_KEY_ALIAS}"
 }
 
-resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = var.LAMBDA_BUCKET
+module "lambda_bucket" {
+
+  source = "../../../templates/modules/bucket"
+  
+  APP       = var.APP
+  ENV       = var.ENV
+  NAME      = "lambda-bucket"
+  USAGE     = "idc"
+  CMK_ARN   = data.aws_kms_key.s3_kms_key.arn
 }
 
 data "archive_file" "lambda_zip" {
@@ -17,7 +29,7 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_s3_object" "lambda_zip" {
-  bucket = aws_s3_bucket.lambda_bucket.id  # Reference the bucket resource
+  bucket = module.lambda_bucket.bucket_id  # Reference the bucket resource
   key    = var.LAMBDA_KEY
   source = data.archive_file.lambda_zip.output_path
   etag   = filemd5(data.archive_file.lambda_zip.output_path)
