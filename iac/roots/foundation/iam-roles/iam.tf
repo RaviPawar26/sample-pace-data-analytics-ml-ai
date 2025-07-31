@@ -166,23 +166,28 @@ resource "aws_iam_role_policy" "glue_policy" {
           "s3:DeleteObject"
         ]
         Resource = [
-          "arn:aws:s3:::${var.APP}-${var.ENV}-billing-data-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-inventory-data-source-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-inventory-data-destination-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-billing-iceberg-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-inventory-iceberg-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-billing-hive-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-inventory-hive-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-splunk-iceberg-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-price-data-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-price-hive-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-price-iceberg-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-glue-scripts-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-glue-dependencies-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-glue-jars-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-glue-spark-logs-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-glue-temp-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-athena-output-primary/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-billing-s3-glue-s3-data/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-billing-s3-glue-s3-hive/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-billing-s3-glue-s3-iceberg/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-inventory-s3-glue-s3-source/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-inventory-s3-glue-s3-target/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-inventory-s3-glue-s3-iceberg/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-inventory-s3-glue-s3-hive/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-usage-splunk-glue-s3-iceberg/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-price-s3-glue-s3-data/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-price-s3-glue-s3-hive/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-price-s3-glue-s3-iceberg/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-trade-s3-glue-s3-data/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-trade-s3-glue-s3-hive/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-trade-s3-glue-s3-iceberg/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-trade-msk-glue-s3-hive/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-equity-trade-msk-glue-s3-iceberg/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-glue-scripts/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-glue-dependencies/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-glue-jars/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-glue-spark-logs/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-glue-temp/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-athena-output/*",
         ]
       },
       {
@@ -1192,7 +1197,7 @@ resource "aws_iam_role_policy" "lambda_billing_glue_workflow_policy" {
           "glue:PutWorkflowRunProperties",
           "glue:GetWorkflowRunProperties"
         ]
-        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:workflow/${var.APP}-${var.ENV}-*"
+        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:workflow/finops-*"
       },
       {
         Effect = "Allow"
@@ -1200,12 +1205,12 @@ resource "aws_iam_role_policy" "lambda_billing_glue_workflow_policy" {
           "glue:UpdateCrawler",
           "glue:GetCrawler"
         ]
-        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:crawler/${var.APP}-${var.ENV}-*"
+        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:crawler/finops-*"
       },
       {
         Effect   = "Allow",
         Action   = "sns:Publish",
-        Resource = "arn:aws:sns:${var.AWS_PRIMARY_REGION}:${local.account_id}:${var.APP}-${var.ENV}-billing-lambda-topic"
+        Resource = "arn:aws:sns:${var.AWS_PRIMARY_REGION}:${local.account_id}:finops-billing-s3-glue-s3-lambda-topic"
       }
     ]
   })
@@ -1228,7 +1233,7 @@ resource "aws_iam_role_policy" "lambda_inventory_glue_workflow_policy" {
           "glue:PutWorkflowRunProperties",
           "glue:GetWorkflowRunProperties"
         ]
-        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:workflow/${var.APP}-${var.ENV}-*"
+        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:workflow/finops-*"
       },
       {
         Effect = "Allow"
@@ -1236,12 +1241,12 @@ resource "aws_iam_role_policy" "lambda_inventory_glue_workflow_policy" {
           "glue:UpdateCrawler",
           "glue:GetCrawler"
         ]
-        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:crawler/${var.APP}-${var.ENV}-*"
+        Resource = "arn:aws:glue:${var.AWS_PRIMARY_REGION}:${local.account_id}:crawler/finops-*"
       },
       {
         Effect   = "Allow",
         Action   = "sns:Publish",
-        Resource = "arn:aws:sns:${var.AWS_PRIMARY_REGION}:${local.account_id}:${var.APP}-${var.ENV}-inventory-lambda-topic"
+        Resource = "arn:aws:sns:${var.AWS_PRIMARY_REGION}:${local.account_id}:finops-inventory-s3-glue-s3-lambda-topic"
       }
     ]
   })
@@ -1310,13 +1315,12 @@ resource "aws_iam_policy" "quicksight_custom_service_policy" {
           "arn:aws:s3tables:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:bucket/*",
           "arn:aws:s3:::${var.APP}-${var.ENV}-athena-output-for-primary-workgroup-only",
           "arn:aws:s3:::${var.APP}-${var.ENV}-athena-output-for-primary-workgroup-only/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-athena-output-primary",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-athena-output-primary/*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-glue-*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-iceberg-*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-inventory-*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-billing-*",
-          "arn:aws:s3:::${var.APP}-${var.ENV}-price-*"
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-athena-output",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-athena-output/*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-glue-*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-iceberg-*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-inventory-*",
+          "arn:aws:s3:::${var.AWS_ACCOUNT_ID}-${var.APP}-${var.ENV}-finops-billing-*"
         ]
       },
       {

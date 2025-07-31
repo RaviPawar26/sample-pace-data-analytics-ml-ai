@@ -16,31 +16,31 @@ locals {
   }
 
   converted_data_source = {
-    table_name = "${var.APP}_${var.ENV}_billing_hive"
-    database_name = "${var.APP}_${var.ENV}_billing"
+    table_name = "finops_billing_s3_glue_s3_hive"
+    database_name = "finops_billing_s3_glue_s3"
   }
 
   // Only the tables that are registered with LakeFormation will include here
   tables = [
     {
-      name = "${var.APP}_${var.ENV}_inventory_hive"
-      database = "${var.APP}_${var.ENV}_inventory"
+      name = "finops_billing_s3_glue_s3_hive"
+      database = "finops_billing_s3_glue_s3"
     },
     {
-      name = "${var.APP}_${var.ENV}_billing_hive"
-      database = "${var.APP}_${var.ENV}_billing"
+      name = "finops_billing_s3_glue_s3_iceberg_static"
+      database = "finops_billing_s3_glue_s3"
     },
     {
-      name = "${var.APP}_${var.ENV}_billing_iceberg_static"
-      database = "${var.APP}_${var.ENV}_billing"
+      name = "finops_inventory_s3_glue_s3_hive"
+      database = "finops_inventory_s3_glue_s3"
     },
     {
-      name = "${var.APP}_${var.ENV}_inventory_iceberg_static"
-      database = "${var.APP}_${var.ENV}_inventory"
+      name = "finops_inventory_s3_glue_s3_iceberg_static"
+      database = "finops_inventory_s3_glue_s3"
     },
     {
-      name = "${var.APP}_${var.ENV}_splunk_iceberg"
-      database = "${var.APP}_${var.ENV}_splunk"
+      name = "finops_usage_splunk_glue_s3_iceberg"
+      database = "finops_usage_splunk_glue_s3"
     }
   ]
 

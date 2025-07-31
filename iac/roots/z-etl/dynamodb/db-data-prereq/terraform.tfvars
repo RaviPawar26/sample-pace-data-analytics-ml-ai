@@ -1,6 +1,0 @@
-APP                                 = "###APP_NAME###"
-ENV                                 = "###ENV_NAME###"
-AWS_PRIMARY_REGION                  = "###AWS_PRIMARY_REGION###"
-AWS_SECONDARY_REGION                = "###AWS_SECONDARY_REGION###"
-S3_PRIMARY_KMS_KEY_ALIAS            = "###APP_NAME###-###ENV_NAME###-s3-secret-key"
-S3_SECONDARY_KMS_KEY_ALIAS          = "###APP_NAME###-###ENV_NAME###-s3-secret-key"

@@ -21,7 +21,7 @@ resource "aws_dynamodb_table" "table" {
 
   server_side_encryption {
     enabled     = true
-    kms_key_arn = var.dynamodb_kms_key_arn
+    kms_key_arn = var.dynamodb_kms_key_arn != null ? var.dynamodb_kms_key_arn : null
   }
 
   dynamic "attribute" {

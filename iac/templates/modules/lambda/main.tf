@@ -1,4 +1,4 @@
-data "aws_region" "current" {}
+
 #
 # IAM role for the lambda function
 #
@@ -48,7 +48,7 @@ module "logs" {
   source   = "../cloudwatch_log_group"
   name     = "/aws/lambda/${var.function_name}"
   roles    = [aws_iam_role.iam_for_lambda.arn]
-  services = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+  services = ["logs.${var.region}.amazonaws.com"]
 }
 
 #

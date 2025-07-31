@@ -9,10 +9,8 @@ data "aws_kms_key" "ssm_kms_key" {
 }
 
 locals {
-  datalake  = "s3://${var.APP}-${var.ENV}-glue-temp-primary"
   domain_id = data.aws_ssm_parameter.datazone_domain_id.value
   json_data = jsondecode(data.aws_ssm_parameter.user_mappings.value)
-
 
   # Extract only Project Owner
   project_owner_emails = flatten([

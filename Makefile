@@ -95,7 +95,7 @@ destroy-iam-roles:
 	@echo "Destroying IAM Roles"
 	(cd iac/roots/foundation/iam-roles; \
 		terraform init; \
-		terraform destroy -auto-approve;)
+		terraform destroy -var CURRENT_ROLE="$(ADMIN_ROLE)" -auto-approve;)
 		@echo "Finished Destroying IAM Roles"
 
 #################### Buckets ####################
@@ -130,9 +130,9 @@ destroy-vpc:
 		terraform destroy -auto-approve;)
 		@echo "Finished Destroying VPC"
 
-#################### MSK ############################
+#################### Serverless MSK ############################
 
-build-lambda-layer:
+build-msk-data-generator-lambda-layer-zip:
 	@echo "Building Lambda Layer"
 	cd iac/roots/foundation/msk-serverless/data-generator; \
 	rm -f dependencies_layer.zip; \
@@ -203,8 +203,6 @@ clean-mfa-components:
 		terraform init; \
 		terraform destroy -auto-approve;)
 		@echo "Finished cleanup"
-
-
 
 deploy-dyo-idc:
 	@echo "Creating SSM parameter with IAM Identity Center user mappings"
@@ -488,7 +486,7 @@ deploy-glue-jars:
 		"https://repo1.maven.org/maven2/software/amazon/s3tables/s3-tables-catalog-for-iceberg-runtime/0.1.7/s3-tables-catalog-for-iceberg-runtime-0.1.7.jar"
 	
 	aws s3 cp "jars/s3-tables-catalog-for-iceberg-runtime-0.1.7.jar" \
-		"s3://$(APP_NAME)-$(ENV_NAME)-glue-jars-primary/" \
+		"s3://$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-glue-jars/" \
 		--region "$(AWS_PRIMARY_REGION)"
 	
 	rm -rf jars/
@@ -547,229 +545,116 @@ destroy-athena:
 		terraform destroy -auto-approve;)
 	@echo "Finished Destroying Athena"
 
-#################### Z-ETL Dynamodb #####################
-deploy-z-etl-dynamodb-data-prereq:
-	@echo "Deploying Z-ETL DynamoDB Pre-requisites"
-	(cd iac/roots/z-etl/dynamodb/db-data-prereq; \
-		terraform init; \
-		terraform apply -auto-approve;)
-	@echo "Finished Deploying Z-ETL DynamoDB Pre-requisites"
-
-destroy-z-etl-dynamodb-data-prereq:
-	@echo "Emptying S3 buckets"
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-equity-orders-data-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-equity-orders-data-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-equity-orders-data-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-equity-orders-data-secondary-log" || true
-	@echo "Destroying Z-ETL DynamoDB Pre-requisites"
-	(cd iac/roots/z-etl/dynamodb/db-data-prereq; \
-		terraform init; \
-		terraform destroy -auto-approve;)
-	@echo "Finished Destroying Z-ETL DynamoDB Pre-requisites"
-
-upload-z-etl-dynamodb-data:
-	@echo "Starting Upload of Z-ETL Data"
-	@TEMP_DIR=$$(mktemp -d) && \
-	gunzip -c data/z-etl/equity_orders.csv.gz > $$TEMP_DIR/equity_orders.csv && \
-	aws s3 cp $$TEMP_DIR/equity_orders.csv s3://$(APP_NAME)-$(ENV_NAME)-equity-orders-data-primary/etl/data/ --region $(AWS_PRIMARY_REGION) && \
-	rm -rf $$TEMP_DIR
-	@echo "Finished Upload of Z-ETL Data"
-
-deploy-z-etl-dynamodb:
-	@echo "Deploying Z-ETL DynamoDB"
-	(cd iac/roots/z-etl/dynamodb/z-etl-db; \
-		terraform init; \
-		terraform apply -auto-approve;)
-	@echo "Finished Deploying Z-ETL DynamoDB"
-
-destroy-z-etl-dynamodb:
-	@echo "Emptying S3 buckets"
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "${APP_NAME}-${ENV_NAME}-zetl-ddb-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "${APP_NAME}-${ENV_NAME}-zetl-ddb-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "${APP_NAME}-${ENV_NAME}-zetl-ddb-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "${APP_NAME}-${ENV_NAME}-zetl-ddb-secondary-log" || true
-	@echo "Destroying Z-ETL DynamoDB"
-	(cd iac/roots/z-etl/dynamodb/z-etl-db; \
-		terraform init; \
-		terraform destroy -auto-approve;)
-	@echo "Finished Destroying Z-ETL DynamoDB"
-
-#################### Z-ETL Snowflake ####################
-
-deploy-z-etl-snowflake:
-	@echo "Deploying Z-ETL Snowflake Data"
-	(cd iac/roots/z-etl/snowflake; \
-		terraform init; \
-		terraform apply -auto-approve;)
-	@echo "Finished Deploying Z-ETL Snowflake Data"
-
-destroy-z-etl-snowflake:
-	@echo "Destroying Z-ETL Snowflake Data"
-	(cd iac/roots/z-etl/snowflake; \
-		terraform init; \
-		terraform destroy -auto-approve;)
-	@echo "Finished Destroying Z-ETL Snowflake Data"
-
-start-snowflake-job:
-	@echo "Starting Snowflake Data Ingestion Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-trading-data-generator)
-	@echo "Started Snowflake Data Ingestion Job"
-
 #################### Billing ####################
 
-deploy-billing:
+deploy-finops-billing-s3-glue-s3:
 	@echo "Deploying Billing Infrastructure"
-	(cd iac/roots/datalakes/billing; \
+	(cd iac/roots/datalakes/finops-billing-s3-glue-s3; \
 		terraform init; \
 		terraform apply -auto-approve;)
 	@echo "Finished Deploying Billing Infrastructure"
 
-destroy-billing:
-
-	@echo "Emptying and deleting S3 Table"
-	aws s3tables delete-table \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-billing \
-    	--namespace $(APP_NAME) --name billing || true
-
-	aws s3tables delete-namespace \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-billing \
-        --namespace $(APP_NAME) || true
-
-	aws s3tables delete-table-bucket \
-        --table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-billing || true
+destroy-finops-billing-s3-glue-s3:
 
 	@echo "Emptying S3 buckets"
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-data-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-data-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-data-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-data-secondary-log" || true	
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-hive-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-hive-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-hive-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-hive-secondary-log" || true	
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-iceberg-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-iceberg-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-iceberg-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-billing-iceberg-secondary-log" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-billing-s3-glue-s3-data" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-billing-s3-glue-s3-hive" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-billing-s3-glue-s3-iceberg" || true
 
 	@echo "Destroying Billing Infrastructure"
-	(cd iac/roots/datalakes/billing; \
+	(cd iac/roots/datalakes/finops-billing-s3-glue-s3; \
 		terraform init; \
 		terraform destroy -auto-approve;)
 	@echo "Finished Destroying Billing Infrastructure"
 
-start-billing-hive-job:
+start-finops-billing-s3-glue-s3-hive-job:
 	@echo "Starting Billing Hive Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-billing-hive)
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-billing-s3-glue-s3-hive)
 	@echo "Started Billing Hive Job"
 
-start-billing-iceberg-static-job:
+start-finops-billing-s3-glue-s3-iceberg-static-job:
 	@echo "Starting Billing Iceberg Static Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-billing-iceberg-static)
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-billing-s3-glue-s3-iceberg-static)
 	@echo "Started Billing Iceberg Static Job"
 
-start-billing-s3table-create-job:
-	@echo "Starting Billing S3 Table Create Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-billing-s3table-create)
-	@echo "Started Billing S3 Create Job"
-
-start-billing-s3table-delete-job:
-	@echo "Starting Billing S3 Table Delete Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-billing-s3table-delete)
-	@echo "Started Billing S3 Table Delete Job"	
-
-start-billing-s3table-job:
+start-finops-billing-s3-glue-s3table-job:
 	@echo "Starting Billing S3 Table Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-billing-s3table;)
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-billing-s3-glue-s3table;)
 	@echo "Started Billing S3 Table Job"
 
-grant-lake-formation-billing-s3-table-catalog:
+grant-lake-formation-finops-billing-s3-glue-s3table-catalog:
 	aws lakeformation grant-permissions \
 		--principal DataLakePrincipalIdentifier="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}" \
-		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/${APP_NAME}-${ENV_NAME}-billing\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"billing\"}}" \
+		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/finops-billing-s3-glue-s3table\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"finops_billing_s3_glue_s3table\"}}" \
 		--permissions ALL \
 		--permissions-with-grant-option ALL \
 		--region "$(AWS_PRIMARY_REGION)"
 
-start-billing-hive-data-quality-ruleset:
+start-finops-billing-s3-glue-s3-hive-data-quality-ruleset:
 	@echo "Starting Billing Hive Data Quality Ruleset"
 	aws glue start-data-quality-ruleset-evaluation-run \
 		--region $(AWS_PRIMARY_REGION) \
 		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
-		--ruleset-names "billing_hive_ruleset" \
-		--data-source '{"GlueTable":{"DatabaseName":"$(APP_NAME)_$(ENV_NAME)_billing","TableName":"$(APP_NAME)_$(ENV_NAME)_billing_hive"}}'
+		--ruleset-names "finops_billing_s3_glue_s3_hive_ruleset" \
+		--data-source '{"GlueTable":{"DatabaseName":"finops_billing_s3_glue_s3","TableName":"finops_billing_s3_glue_s3_hive"}}'
 
 	@echo "Started Billing Hive Data Quality Ruleset"
 
-start-billing-iceberg-data-quality-ruleset:
+start-billing-s3-glue-s3-iceberg-data-quality-ruleset:
 	@echo "Starting Billing Iceberg Data Quality Ruleset"
 	aws glue start-data-quality-ruleset-evaluation-run \
 		--region $(AWS_PRIMARY_REGION) \
 		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
-		--ruleset-names "billing_iceberg_ruleset" \
-		--data-source '{"GlueTable":{"DatabaseName":"$(APP_NAME)_$(ENV_NAME)_billing","TableName":"$(APP_NAME)_$(ENV_NAME)_billing_iceberg_static"}}'
+		--ruleset-names "finops_billing_s3_glue_s3_iceberg_ruleset" \
+		--data-source '{"GlueTable":{"DatabaseName":"finops_billing_s3_glue_s3","TableName":"finops_billing_s3_glue_s3_iceberg_static"}}'
 	@echo "Started Billing Iceberg Data Quality Ruleset"
 
-register-billing-hive-s3bucket-with-lake-formation:
-	aws lakeformation register-resource \
-        --resource-arn "arn:aws:s3:::$(APP_NAME)-$(ENV_NAME)-billing-hive-primary" \
-        --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APP_NAME}-${ENV_NAME}-lakeformation-service-role" \
-        --with-federation \
-        --region "${AWS_PRIMARY_REGION}"
-
-register-billing-iceberg-s3bucket-with-lake-formation:
-	aws lakeformation register-resource \
-        --resource-arn "arn:aws:s3:::$(APP_NAME)-$(ENV_NAME)-billing-iceberg-primary" \
-        --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APP_NAME}-${ENV_NAME}-lakeformation-service-role" \
-        --with-federation \
-        --region "${AWS_PRIMARY_REGION}"
-
-upload-billing-dynamic-report-1:
+upload-billing-s3-glue-s3-iceberg-dynamic-report-1:
 	@echo "Starting Upload of Billing Report 1 to trigger dynamic Glue Workflow"
 	aws s3 cp \
 		data/billing/dynamic/cost-and-usage-report-00002.csv.gz \
-		s3://$(APP_NAME)-$(ENV_NAME)-billing-data-primary/billing/$(APP_NAME)-$(ENV_NAME)-cost-and-usage-report/manual/
+		s3://${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-finops-billing-s3-glue-s3-data/billing/$(APP_NAME)-$(ENV_NAME)-cost-and-usage-report/manual/
 	@echo "Finished Upload of Billing Report 1"
 
-upload-billing-dynamic-report-2:
+upload-billing-s3-glue-s3-iceberg-dynamic-report-2:
 	@echo "Starting Upload of Billing Report 2 to trigger dynamic Glue Workflow"
 	aws s3 cp \
 		data/billing/dynamic/cost-and-usage-report-00003.csv.gz \
-		s3://$(APP_NAME)-$(ENV_NAME)-billing-data-primary/billing/$(APP_NAME)-$(ENV_NAME)-cost-and-usage-report/manual/
+		s3://${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-finops-billing-s3-glue-s3-data/billing/$(APP_NAME)-$(ENV_NAME)-cost-and-usage-report/manual/
 	@echo "Finished Upload of Billing Report 2"
 
-grant-lake-formation-billing-iceberg-dynamic:
+grant-lake-formation-billing-s3-glue-s3-iceberg-dynamic:
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}" \
-        --resource "{\"Table\": {\"DatabaseName\": \"${APP_NAME}_${ENV_NAME}_billing\", \"Name\": \"${APP_NAME}_${ENV_NAME}_billing_iceberg_dynamic\"}}" \
+        --resource "{\"Table\": {\"DatabaseName\": \"finops_billing_s3_glue_s3\", \"Name\": \"finops_billing_s3_glue_s3_iceberg_dynamic\"}}" \
         --permissions ALL \
         --permissions-with-grant-option ALL \
         --region "$(AWS_PRIMARY_REGION)"
 
-activate-cost-allocation-tags:
+activate-finops-s3-glue-s3-cost-allocation-tags:
 	@echo "Activating Cost Allocation Tags"
 	aws ce update-cost-allocation-tags-status \
         --region us-east-1 \
         --cost-allocation-tags-status '[{"TagKey":"Application","Status":"Active"},{"TagKey":"Environment","Status":"Active"},{"TagKey":"Usage","Status":"Active"}]'
 	@echo "Finished Activating Cost Allocation Tags"
 
-deploy-billing-cur:
+deploy-finops-s3-glue-s3-billing-cur:
 	@echo "Deploying Billing CUR Report"
-	(cd iac/roots/datalakes/billing-cur; \
+	(cd iac/roots/datalakes/finops-billing-s3-glue-s3-cur; \
 		terraform init; \
 		terraform apply -auto-approve;)
 	@echo "Finished Deploying Billing CUR Report"
 
-destroy-billing-cur:
+destroy-finops-s3-glue-s3-billing-cur:
 	@echo "Destroying Billing CUR Report"
-	(cd iac/roots/datalakes/billing-cur; \
+	(cd iac/roots/datalakes/finops-billing-s3-glue-s3-cur; \
 		terraform init; \
 		terraform destroy -auto-approve;)
 	@echo "Finished DDestroying Billing CUR Report"
 
 #################### Inventory ####################
 
-download-sec-reports:
+download-finops-inventory-sec-reports:
 	@echo "Downloading Costco SEC Reports"
 	@mkdir -p /tmp/costco-sec
 	
@@ -783,7 +668,7 @@ download-sec-reports:
 	
 	# Upload to S3
 	@aws s3 cp "/tmp/costco-sec/submissions.json" \
-		"s3://$(APP_NAME)-$(ENV_NAME)-inventory-data-source-primary/" \
+		"s3://$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-finops-inventory-s3-glue-s3-source/" \
 		--region "$(AWS_PRIMARY_REGION)"
 	
 	# Download company facts
@@ -793,7 +678,7 @@ download-sec-reports:
 	
 	# Upload company facts to S3
 	@aws s3 cp "/tmp/costco-sec/company_facts.json" \
-		"s3://$(APP_NAME)-$(ENV_NAME)-inventory-data-source-primary/" \
+		"s3://$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-finops-inventory-s3-glue-s3-source/" \
 		--region "$(AWS_PRIMARY_REGION)"
 
 	# Download last 5 years of 10-K and 10-Q reports
@@ -804,7 +689,7 @@ download-sec-reports:
 				-o "/tmp/costco-sec/$$form-$$year.htm" \
 				"https://www.sec.gov/Archives/edgar/data/909832/$$year/*.$$form"; \
 			aws s3 cp "/tmp/costco-sec/$$form-$$year.htm" \
-				"s3://$(APP_NAME)-$(ENV_NAME)-inventory-data-source-primary/" \
+				"s3://$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-finops-inventory-s3-glue-s3-source/" \
 				--region "$(AWS_PRIMARY_REGION)"; \
 			sleep 0.1; \
 		done; \
@@ -813,360 +698,358 @@ download-sec-reports:
 	@rm -rf /tmp/costco-sec
 	@echo "Finished downloading Costco SEC Reports"
 
-deploy-inventory:
+deploy-finops-inventory-s3-glue-s3:
 	@echo "Deploying Inventory Infrastructure"
-	(cd iac/roots/datalakes/inventory; \
+	(cd iac/roots/datalakes/finops-inventory-s3-glue-s3; \
 		terraform init; \
 		terraform apply -auto-approve;)
+		@echo "Downloading SEC reports..."
+		@$(MAKE) download-finops-inventory-sec-reports
 		@echo "Finished Deploying Inventory Infrastructure"
 
-destroy-inventory:
-	@echo "Emptying and deleting S3 Table"
-	aws s3tables delete-table \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-inventory \
-    	--namespace $(APP_NAME) --name inventory || true
-
-	aws s3tables delete-namespace \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-inventory \
-        --namespace $(APP_NAME) || true
-
-	aws s3tables delete-table-bucket \
-        --table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-inventory || true
+destroy-finops-inventory-s3-glue-s3:
 
 	@echo "Emptying S3 buckets"
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-source-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-source-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-destination-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-destination-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-iceberg-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-iceberg-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-iceberg-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-iceberg-secondary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-destination-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-destination-secondary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-source-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-inventory-data-source-secondary-log" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-inventory-source" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-inventory-target" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-inventory-hive" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-inventory-iceberg" || true
 
 	@echo "Destroying Inventory Infrastructure and Job"
-	(cd iac/roots/datalakes/inventory; \
+	(cd iac/roots/datalakes/finops-inventory-s3-glue-s3; \
 		terraform init; \
 		terraform destroy -auto-approve;)
 		@echo "Finished Destroying Inventory Infrastructure and Job"
 
-start-inventory-hive-job:
+start-finops-inventory-s3-glue-s3-hive-job:
 	@echo "Starting Inventory Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-inventory-hive)
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-inventory-s3-glue-s3-hive)
 	@echo "Started Inventory Job"
 
-start-inventory-iceberg-static-job:
+start-finops-inventory-s3-glue-s3-iceberg-static-job:
 	@echo "Starting Inventory Iceberg Static Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-inventory-iceberg-static)
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-inventory-s3-glue-s3-iceberg-static)
 	@echo "Started Inventory Iceberg Static Job"
 
-start-inventory-s3table-create-job:
-	@echo "Starting Inventory S3 Table Create Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-inventory-s3table-create)
-	@echo "Started Inventory S3 Table Create Job"
-
-start-inventory-s3table-delete-job:
-	@echo "Starting Inventory S3 Table Delete Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-inventory-s3table-delete)
-	@echo "Started Inventory S3 Table Delete Job"
-
-start-inventory-s3table-job:
+start-finops-inventory-s3-glue-s3table-job:
 	@echo "Starting Inventory S3 Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-inventory-s3table)
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-inventory-s3-glue-s3table)
 	@echo "Started Inventory S3 Table Job"
 
-grant-lake-formation-inventory-s3-table-catalog:
+grant-lake-formation-inventory-s3-glue-s3table-catalog:
 	aws lakeformation grant-permissions \
 		--principal DataLakePrincipalIdentifier="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}" \
-		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/${APP_NAME}-${ENV_NAME}-inventory\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"inventory\"}}" \
+		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/finops-inventory-s3-glue-s3table\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"finops_inventory_s3_glue_s3table\"}}" \
 		--permissions ALL \
 		--permissions-with-grant-option ALL \
 		--region "$(AWS_PRIMARY_REGION)"
 
-start-inventory-hive-data-quality-ruleset:
+start-inventory-s3-glue-s3-hive-data-quality-ruleset:
 	@echo "Starting Inventory Hive Data Quality Ruleset"
 	aws glue start-data-quality-ruleset-evaluation-run \
 		--region $(AWS_PRIMARY_REGION) \
 		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
-		--ruleset-names "inventory-hive-ruleset" \
-        --data-source '{"GlueTable":{"DatabaseName":"$(APP_NAME)_$(ENV_NAME)_inventory","TableName":"$(APP_NAME)_$(ENV_NAME)_inventory_hive"}}'
+		--ruleset-names "finops-inventory-s3-glue-s3-hive-ruleset" \
+        --data-source '{"GlueTable":{"DatabaseName":"finops_inventory_s3_glue_s3","TableName":"finops_inventory_s3_glue_s3_hive"}}'
 	@echo "Started Inventory Hive Data Quality Ruleset"
 
-start-inventory-iceberg-data-quality-ruleset:
+start-inventory-s3-glue-s3-iceberg-data-quality-ruleset:
 	@echo "Starting Inventory Iceberg Data Quality Ruleset"
 	aws glue start-data-quality-ruleset-evaluation-run \
 		--region $(AWS_PRIMARY_REGION) \
 		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
-		--ruleset-names "inventory-iceberg-ruleset" \
-		--data-source '{"GlueTable":{"DatabaseName":"$(APP_NAME)_$(ENV_NAME)_inventory","TableName":"$(APP_NAME)_$(ENV_NAME)_inventory_iceberg_static"}}'
+		--ruleset-names "finops-inventory-s3-glue-s3-iceberg-ruleset" \
+		--data-source '{"GlueTable":{"DatabaseName":"finops_inventory_s3_glue_s3","TableName":"finops_inventory_s3_glue_s3_iceberg_static"}}'
 	@echo "Started Inventory Iceberg Data Quality Ruleset"
 
-register-inventory-hive-s3bucket-with-lake-formation:
-	aws lakeformation register-resource \
-        --resource-arn "arn:aws:s3:::$(APP_NAME)-$(ENV_NAME)-inventory-hive-primary" \
-        --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APP_NAME}-${ENV_NAME}-lakeformation-service-role" \
-        --with-federation \
-        --region "${AWS_PRIMARY_REGION}"
-
-register-inventory-iceberg-s3bucket-with-lake-formation:
-	aws lakeformation register-resource \
-        --resource-arn "arn:aws:s3:::$(APP_NAME)-$(ENV_NAME)-inventory-iceberg-primary" \
-        --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APP_NAME}-${ENV_NAME}-lakeformation-service-role" \
-        --with-federation \
-        --region "${AWS_PRIMARY_REGION}"
-
-upload-inventory-dynamic-report-1:
+upload-inventory-s3-glue-s3-iceber-dynamic-report-1:
 	@echo "Starting Upload of Inventory Report 1 to trigger dynamic Glue Workflow"
 	aws s3 cp \
 		data/inventory/dynamic/bc8bbf78-546e-4a5b-ac3d-d5dae9ffadab.csv.gz \
-		s3://$(APP_NAME)-$(ENV_NAME)-inventory-data-destination-primary/$(APP_NAME)-$(ENV_NAME)-inventory-data-source-primary/InventoryConfig/data/
-	@echo "Finished Upload of Billing Report 1"
+		s3://${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-finops-inventory-s3-glue-s3-target/${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-finops-inventory-s3-glue-s3-source/InventoryConfig/data/
+	@echo "Finished Upload of Inventory Report 1"
 
-upload-inventory-dynamic-report-2:
+upload-inventory-s3-glue-s3-iceber-dynamic-report-2:
 	@echo "Starting Upload of Inventory Report 2 to trigger dynamic Glue Workflow"
 	aws s3 cp \
 		data/inventory/dynamic/b359c3d9-b58e-4f23-aee4-4b75ab78b3bb.csv.gz \
-		s3://$(APP_NAME)-$(ENV_NAME)-inventory-data-destination-primary/$(APP_NAME)-$(ENV_NAME)-inventory-data-source-primary/InventoryConfig/data/
-	@echo "Finished Upload of Billing Report 2"
+		s3://${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-finops-inventory-s3-glue-s3-target/${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-finops-inventory-s3-glue-s3-source/InventoryConfig/data/
+	@echo "Finished Upload of Inventory Report 2"
 
-grant-lake-formation-inventory-iceberg-dynamic:
+grant-lake-formation-inventory-s3-glue-s3-iceberg-dynamic:
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}" \
-        --resource "{\"Table\": {\"DatabaseName\": \"${APP_NAME}_${ENV_NAME}_inventory\", \"Name\": \"${APP_NAME}_${ENV_NAME}_inventory_iceberg_dynamic\"}}" \
+        --resource "{\"Table\": {\"DatabaseName\": \"finops_inventory_s3_glue_s3\", \"Name\": \"finops_inventory_s3_glue_s3_iceberg_dynamic\"}}" \
         --permissions ALL \
         --permissions-with-grant-option ALL \
         --region "$(AWS_PRIMARY_REGION)"
 
-
 #################### Splunk ####################
 
-deploy-splunk:
+deploy-finops-usage-splunk-glue-s3:
 	@echo "Deploying Splunk"
-	(cd iac/roots/datalakes/splunk; \
+	(cd iac/roots/datalakes/finops-usage-splunk-glue-s3; \
 		terraform init; \
 		terraform apply -auto-approve;)
 	@echo "Finished Deploying Splunk"
 
-destroy-splunk:
-	@echo "Emptying and deleting S3 Table"
-	aws s3tables delete-table \
-        --table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-splunk \
-        --namespace $(APP_NAME) --name inventory || true
-
-	aws s3tables delete-namespace \
-        --table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-splunk \
-        --namespace $(APP_NAME) || true
-
-	aws s3tables delete-table-bucket \
-        --table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-splunk || true
+destroy-finops-usage-splunk-glue-s3:
 
 	@echo "Emptying S3 buckets"
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-iceberg-splunk-primary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-iceberg-splunk-secondary" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-iceberg-splunk-primary-log" || true
-	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-iceberg-splunk-secondary-log" || true
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-finops-usage-splunk-glue-s3-iceberg" || true
 
 	@echo "Destroying Splunk"
-	(cd iac/roots/datalakes/splunk; \
+	(cd iac/roots/datalakes/finops-usage-splunk-glue-s3; \
 		terraform init; \
 		terraform destroy -auto-approve;)
 	@echo "Finished Destroying Splunk"
 
-start-splunk-iceberg-static-job:
-	@echo "Starting Splunk ETL Job"
-	aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-splunk-iceberg-static
+start-finops-usage-splunk-glue-s3-iceberg-job:
+	@echo "Starting Splunk Iceberg Static Job"
+	aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-usage-splunk-glue-s3-iceberg
 	@echo "Started Splunk Iceberg Static Job"
 
-start-splunk-s3table-create-job:
-	@echo "Starting Splunk S3 Iceberg Create Job"
-	aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-splunk-s3table-create
-	@echo "Started Splunk S3 Table Create Job"	
-	
-start-splunk-s3table-delete-job:
-	@echo "Starting Splunk S3 Table Delete Job"
-	aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-splunk-s3table-delete
-	@echo "Started Splunk S3 Table Delete Job"
-
-start-splunk-s3table-job:
+start-finops-usage-splunk-glue-s3table-job:
 	@echo "Starting Splunk S3 Table Job"
-	aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-splunk-s3table
+	aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name finops-usage-splunk-glue-s3table
 	@echo "Started Splunk S3 Table Job"
 
-grant-lake-formation-splunk-s3-table-catalog:
+grant-lake-formation-finops-usage-splunk-glue-s3table-catalog:
 	aws lakeformation grant-permissions \
 		--principal DataLakePrincipalIdentifier="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}" \
-		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/${APP_NAME}-${ENV_NAME}-splunk\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"splunk\"}}" \
+		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/finops-usage-splunk-glue-s3table\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"finops_usage_splunk_glue_s3table\"}}" \
 		--permissions ALL \
 		--permissions-with-grant-option ALL \
 		--region "$(AWS_PRIMARY_REGION)"
 
-register-splunk-iceberg-s3bucket-with-lake-formation:
-	aws lakeformation register-resource \
-        --resource-arn "arn:aws:s3:::$(APP_NAME)-$(ENV_NAME)-splunk-iceberg-primary" \
-        --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APP_NAME}-${ENV_NAME}-lakeformation-service-role" \
-        --with-federation \
-        --region "${AWS_PRIMARY_REGION}"
+###################### Equity Price S3 Glue S3 #################################
 
+run-equity-price-file-generator:
+	@echo "Running Equity Price Generator"
+	(cd iac/roots/common/file-generator; \
+	python price_generator.py;)
+	@echo "Finished Running Equity Price Generator"
 
-###################### PRICE #################################
-
-deploy-price:
-	@echo "Deploying Price Infrastructure"
-	(cd iac/roots/datalakes/price; \
+deploy-equity-price-s3-glue-s3:
+	@echo "Deploying Equity Price Infrastructure"
+	(cd iac/roots/datalakes/equity-price-s3-glue-s3; \
 		terraform init; \
 		terraform apply -auto-approve;)
-	@echo "Finished Deploying Price Infrastructure"
+	@echo "Finished Deploying Equity Price Infrastructure"
 
-destroy-price:
-	@echo "Emptying and deleting S3 Table"
-	aws s3tables delete-table \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-price \
-    	--namespace $(APP_NAME) --name price || true
-
-	aws s3tables delete-namespace \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-price \
-        --namespace $(APP_NAME) || true
-
-	aws s3tables delete-table-bucket \
-        --table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-price || true
+destroy-equity-price-s3-glue-s3:
 
 	@echo "Emptying S3 buckets"
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-data-primary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-data-secondary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-data-primary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-data-secondary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-hive-primary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-hive-secondary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-hive-primary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-hive-secondary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-iceberg-primary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-iceberg-secondary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-iceberg-primary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-price-iceberg-secondary-log" || true
+	build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-equity-price-s3-glue-s3-data" || true
+	build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-equity-price-s3-glue-s3-hive" || true
+	build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-equity-price-s3-glue-s3-iceberg" || true
 
-	@echo "Destroying Price Infrastructure"
-	(cd iac/roots/datalakes/price; \
+	@echo "Destroying Equity Price Infrastructure"
+	(cd iac/roots/datalakes/equity-price-s3-glue-s3; \
 		terraform init; \
 		terraform destroy -auto-approve;)
-	@echo "Finished DepDestroyingloying Price Infrastructure"
+	@echo "Finished DepDestroyingloying Equity Price Infrastructure"
 
-start-price-hive-job:
-	@echo "Starting Price Hive Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-price-hive)
-	@echo "Started Price Hive Job"
+start-equity-price-s3-glue-s3-hive-job:
+	@echo "Starting Equity Price Hive Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-price-s3-glue-s3-hive)
+	@echo "Started Equity Price Hive Job"
 
-start-price-iceberg-job:
-	@echo "Starting Price Iceberg Static Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-price-iceberg)
-	@echo "Started Price Iceberg Static Job"
+start-equity-price-s3-glue-s3-iceberg-job:
+	@echo "Starting Equity Price Iceberg Static Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-price-s3-glue-s3-iceberg)
+	@echo "Started Equity Price Iceberg Static Job"
 
-start-price-s3table-create-job:
-	@echo "Starting Price S3 Table Create Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-price-s3table-create)
-	@echo "Started Price S3 Table Create Job"
+start-equity-price-s3-glue-s3table-job:
+	@echo "Starting Equity Price S3 Table Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-price-s3-glue-s3table)
+	@echo "Started Equity Price S3 Table Job"
 
-start-price-s3table-delete-job:
-	@echo "Starting Price S3 Table Delete Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-price-s3table-delete)
-	@echo "Started Price S3 Table Delete Job"
-
-start-price-s3table-job:
-	@echo "Starting Price S3 Table Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-price-s3table;)
-	@echo "Started Price S3 Table Job"
-
-grant-lake-formation-price-s3-table-catalog:
+grant-lake-formation-equity-price-s3-glue-s3table-catalog:
 	aws lakeformation grant-permissions \
 		--principal DataLakePrincipalIdentifier="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}" \
-		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/${APP_NAME}-${ENV_NAME}-price\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"price\"}}" \
+		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/equity-price-s3-glue-s3table\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"equity_price_s3_glue_s3table\"}}" \
 		--permissions ALL \
 		--permissions-with-grant-option ALL \
 		--region "$(AWS_PRIMARY_REGION)"
 
-start-price-hive-data-quality-ruleset:
-	@echo "Starting Price Hive Data Quality Ruleset"
+start-equity-price-s3-glue-s3-hive-data-quality-ruleset:
+	@echo "Starting Equity Price Hive Data Quality Ruleset"
 	aws glue start-data-quality-ruleset-evaluation-run \
 		--region $(AWS_PRIMARY_REGION) \
 		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
-		--ruleset-names "price_hive_ruleset" \
-		--data-source '{"GlueTable":{"DatabaseName":"$(APP_NAME)_$(ENV_NAME)_price","TableName":"$(APP_NAME)_$(ENV_NAME)_price_hive"}}'
-	@echo "Started Price Hive Data Quality Ruleset"
+		--ruleset-names "equity_price_s3_glue_s3_hive_ruleset" \
+		--data-source '{"GlueTable":{"DatabaseName":"equity_price_s3_glue_s3","TableName":"equity_price_s3_glue_s3_hive"}}'
+	@echo "Started Equity Price Hive Data Quality Ruleset"
 
-######################## TRADE ################################
+start-equity-price-s3-glue-s3-iceberg-data-quality-ruleset:
+	@echo "Starting Equity Price Iceberg Data Quality Ruleset"
+	aws glue start-data-quality-ruleset-evaluation-run \
+		--region $(AWS_PRIMARY_REGION) \
+		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
+		--ruleset-names "equity_price_s3_glue_s3_iceberg_ruleset" \
+		--data-source '{"GlueTable":{"DatabaseName":"equity_price_s3_glue_s3","TableName":"equity_price_s3_glue_s3_iceberg"}}'
+	@echo "Started Equity Price Iceberg Data Quality Ruleset"
 
-deploy-trade:
-	@echo "Deploying Trade Infrastructure"
-	(cd iac/roots/datalakes/trade; \
+###################### Equity Trade S3 Glue S3 #################################
+
+run-equity-trade-file-generator:
+	@echo "Running Equity Trade Generator"
+	(cd iac/roots/common/file-generator; \
+	python equity_trade_generator.py;)
+	@echo "Finished Running Equity Trade Generator"
+
+deploy-equity-trade-s3-glue-s3:
+	@echo "Deploying Equity Trade Infrastructure"
+	(cd iac/roots/datalakes/equity-trade-s3-glue-s3; \
 		terraform init; \
 		terraform apply -auto-approve;)
 	@echo "Finished Deploying Trade Infrastructure"
 
-destroy-trade:
-	@echo "Emptying and deleting S3 Table"
-	aws s3tables delete-table \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-trade \
-    	--namespace $(APP_NAME) --name trade || true
-
-	aws s3tables delete-namespace \
-    	--table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-trade \
-        --namespace $(APP_NAME) || true
-
-	aws s3tables delete-table-bucket \
-        --table-bucket-arn arn:aws:s3tables:$(AWS_PRIMARY_REGION):$(AWS_ACCOUNT_ID):bucket/$(APP_NAME)-$(ENV_NAME)-trade || true
+destroy-equity-trade-s3-glue-s3:
 
 	@echo "Emptying S3 buckets"
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-hive-primary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-hive-secondary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-hive-primary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-hive-secondary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-iceberg-primary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-iceberg-secondary" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-iceberg-primary-log" || true
-	build-script/empty-s3.sh empty_s3_bucket_by_name "$(APP_NAME)-$(ENV_NAME)-trade-iceberg-secondary-log" || true
+	build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-equity-trade-s3-glue-s3-data" || true
+	build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-equity-trade-s3-glue-s3-hive" || true
+	build-script/empty-s3.sh empty_s3_bucket_by_name "$(AWS_ACCOUNT_ID)-$(APP_NAME)-$(ENV_NAME)-equity-trade-s3-glue-s3-iceberg" || true
+
+	@echo "Destroying Equity Trade Infrastructure"
+	(cd iac/roots/datalakes/equity-trade-s3-glue-s3; \
+		terraform init; \
+		terraform destroy -auto-approve;)
+	@echo "Finished DepDestroyingloying Equity Trade Infrastructure"
+
+start-equity-trade-s3-glue-s3-hive-job:
+	@echo "Starting Equity Trade Hive Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-trade-s3-glue-s3-hive)
+	@echo "Started Equity Trade Hive Job"
+
+start-equity-trade-s3-glue-s3-iceberg-job:
+	@echo "Starting Equity Trade Iceberg Static Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-trade-s3-glue-s3-iceberg)
+	@echo "Started Equity Trade Iceberg Static Job"
+
+start-equity-trade-s3-glue-s3table-job:
+	@echo "Starting Equity Trade S3 Table Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-trade-s3-glue-s3table)
+	@echo "Started Equity Trade S3 Table Job"
+
+grant-lake-formation-equity-trade-s3-glue-s3table-catalog:
+	aws lakeformation grant-permissions \
+		--principal DataLakePrincipalIdentifier="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}" \
+		--resource "{\"Table\": {\"CatalogId\": \"${AWS_ACCOUNT_ID}:s3tablescatalog/equity-trade-s3-glue-s3table\", \"DatabaseName\": \"${APP_NAME}\", \"Name\": \"equity_trade_s3_glue_s3table\"}}" \
+		--permissions ALL \
+		--permissions-with-grant-option ALL \
+		--region "$(AWS_PRIMARY_REGION)"
+
+start-equity-trade-s3-glue-s3-hive-data-quality-ruleset:
+	@echo "Starting Equity Trade Hive Data Quality Ruleset"
+	aws glue start-data-quality-ruleset-evaluation-run \
+		--region $(AWS_PRIMARY_REGION) \
+		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
+		--ruleset-names "equity_trade_s3_glue_s3_hive_ruleset" \
+		--data-source '{"GlueTable":{"DatabaseName":"equity_trade_s3_glue_s3","TableName":"equity_trade_s3_glue_s3_hive"}}'
+	@echo "Started Equity Trade Data Quality Ruleset"
+
+start-equity-trade-s3-glue-s3-iceberg-data-quality-ruleset:
+	@echo "Starting Equity Trade Iceberg Data Quality Ruleset"
+	aws glue start-data-quality-ruleset-evaluation-run \
+		--region $(AWS_PRIMARY_REGION) \
+		--role "$(APP_NAME)-$(ENV_NAME)-glue-role"  \
+		--ruleset-names "equity_trade_s3_glue_s3_iceberg_ruleset" \
+		--data-source '{"GlueTable":{"DatabaseName":"equity_trade_s3_glue_s3","TableName":"equity_trade_s3_glue_s3_iceberg"}}'
+	@echo "Started Equity Trade Iceberg Data Quality Ruleset"
+
+######################## Equity Trade MSK Glue S3 ################################
+
+deploy-equity-trade-msk-glue-s3:
+	@echo "Deploying Equity Trade Infrastructure"
+	(cd iac/roots/datalakes/equity-trade-msk-glue-s3; \
+		terraform init; \
+		terraform apply -auto-approve;)
+	@echo "Finished Deploying Equity Trade Infrastructure"
+
+destroy-equity-trade-msk-glue-s3:
+	@echo "Emptying S3 buckets"
+	build-script/empty-s3.sh empty_s3_bucket_by_name "${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-trade-hive" || true
+	build-script/empty-s3.sh empty_s3_bucket_by_name "${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-trade-iceberg" || true
 	@echo "Destroying Trade Infrastructure"
-	(cd iac/roots/datalakes/trade; \
+	(cd iac/roots/datalakes/equity-trade-msk-glue-s3; \
 		terraform init; \
 		terraform destroy -auto-approve;)
 	@echo "Finished Destroying Trade Infrastructure"
 
-start-trade-job:
-	@echo "Starting Trade Job"
-	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name $(APP_NAME)-$(ENV_NAME)-trade-job;)
+start-equity-trade-msk-glue-s3-job:
+	@echo "Starting Eqity Trade Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-trade-msk-glue-s3)
 	@echo "Started Trade Job"
 
-run-test-harness-trade:
+run-equity-trade-msk-glue-s3-test-harness:
 	@echo "Starting Test Harness Lambda"
 	(aws lambda invoke --region $(AWS_PRIMARY_REGION) --function-name $(APP_NAME)-$(ENV_NAME)-msk-producer-lambda --payload '{"body" : "{\"topic\" : \"trade-topic\", \"duration\" : 1}"}' response.json --cli-binary-format raw-in-base64-out --cli-read-timeout 900;)
 	@echo "Finished Starting Test Harness Lambda"
 
-###################### STOCKS ##############################
+###################### Equity Trade MSK Flink MSK ##############################
 
-build-flink-app:
-	cd iac/roots/datalakes/stocks/java-app/msf && \
+build-equity-trade-msk-flink-msk-app:
+	cd iac/roots/datalakes/equity-trade-msk-flink-msk/java-app/msf && \
 	mvn clean package
 
-deploy-stocks:
-	@echo "Deploying Stocks Infrastructure"
-	(cd iac/roots/datalakes/stocks; \
+deploy-equity-trade-msk-flink-msk:
+	@echo "Deploying Equity Trade Infrastructure"
+	(cd iac/roots/datalakes/equity-trade-msk-flink-msk; \
 		terraform init; \
 		terraform apply -auto-approve;)
-	@echo "Finished Deploying Stocks Infrastructure"
+	@echo "Finished Deploying Equity Trade Infrastructure"
 
-destroy-stocks:
-	@echo "Destroying Stocks Infrastructure"
-	(cd iac/roots/datalakes/stocks; \
+destroy-equity-trade-msk-flink-msk:
+	@echo "Destroying Equity Trade Infrastructure"
+	(cd iac/roots/datalakes/equity-trade-msk-flink-msk; \
 		terraform init; \
 		terraform destroy -auto-approve;)
-	@echo "Finished Destroying Stocks Infrastructure"
+	@echo "Finished Destroying Equity Trade Infrastructure"
 
-run-test-harness-stock:
+run-equity-trade-msk-flink-msk-test-harness:
 	@echo "Starting Test Harness Lambda"
 	(aws lambda invoke --region $(AWS_PRIMARY_REGION) --function-name $(APP_NAME)-$(ENV_NAME)-msk-producer-lambda --payload '{"body" : "{\"duration\" : 1}"}' response.json --cli-binary-format raw-in-base64-out --cli-read-timeout 900;)
 	@echo "Finished Starting Test Harness Lambda"
-	
+
+#################### Z-ETL Dynamodb #####################
+
+deploy-equity-order-dd-zetl-s3-prereq:
+	@echo "Deploying Z-ETL DynamoDB Pre-requisites"
+	(cd iac/roots/z-etl/dynamodb/equity-order-dd-zetl-s3-prereq; \
+		terraform init; \
+		terraform apply -auto-approve;)
+	@echo "Finished Deploying Z-ETL DynamoDB Pre-requisites"
+
+destroy-equity-order-dd-zetl-s3-prereq:
+	@echo "Emptying S3 buckets"
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "${AWS_ACCOUNT_ID}-$(APP_NAME)-$(ENV_NAME)-equity-order-dd-zetl-s3-data" || true
+
+	@echo "Destroying Z-ETL DynamoDB Pre-requisites"
+	(cd iac/roots/z-etl/dynamodb/equity-order-dd-zetl-s3-prereq; \
+		terraform init; \
+		terraform destroy -auto-approve;)
+	@echo "Finished Destroying Z-ETL DynamoDB Pre-requisites"
+
+deploy-equity-order-dd-zetl-s3:
+	@echo "Deploying Z-ETL DynamoDB"
+	(cd iac/roots/z-etl/dynamodb/equity-order-dd-zetl-s3; \
+		terraform init; \
+		terraform apply -auto-approve;)
+	@echo "Finished Deploying Z-ETL DynamoDB"
+
+destroy-equity-order-dd-zetl-s3:
+	@echo "Emptying S3 buckets"
+	$(ENV_PATH)../build-script/empty-s3.sh empty_s3_bucket_by_name "${AWS_ACCOUNT_ID}-${APP_NAME}-${ENV_NAME}-equity-order-dd-zetl-s3" || true
+
+	@echo "Destroying Z-ETL DynamoDB"
+	(cd iac/roots/z-etl/dynamodb/equity-order-dd-zetl-s3; \
+		terraform init; \
+		terraform destroy -auto-approve;)
+	@echo "Finished Destroying Z-ETL DynamoDB"
+
 #################### Project Configuration ####################
 
 deploy-project-config:
@@ -1190,75 +1073,105 @@ deploy-project-user:
 		terraform apply -auto-approve;)
 	@echo "Finished Deploying Project User"
 
-billing-grant-producer-s3tables-catalog-permissions:
+finops-billing-s3-glue-s3-grant-producer-s3tables-catalog-permissions:
 	@echo "Grant Producer S3Tables Catalog Permissions"
 	$(eval producer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="$(producer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-billing\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"billing\"}}" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/finops-billing-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"finops_billing_s3_glue_s3table\"}}" \
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished granting Producer S3Tables Catalog Permissions"
 
-billing-grant-consumer-s3tables-catalog-permissions:
+finops-billing-s3-glue-s3-grant-consumer-s3tables-catalog-permissions:
 	@echo "Grant Consumer S3Tables Catalog Permissions"
 	$(eval consumer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/consumer/role --query Parameter.Value --output text))
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="$(consumer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-billing\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"billing\"}}" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/finops-billing-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"finops_billing_s3_glue_s3table\"}}" \
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished Consumer Project Configuration"
 
-inventory-grant-producer-s3tables-catalog-permissions:
+finops-inventory-s3-glue-s3-grant-producer-s3tables-catalog-permissions:
 	@echo "Grant Producer S3Tables Catalog Permissions"
 	$(eval producer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="$(producer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-inventory\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"inventory\"}}" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/finops-inventory-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"finops_inventory_s3_glue_s3table\"}}" \
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished granting Producer S3Tables Catalog Permissions"
 
-inventory-grant-consumer-s3tables-catalog-permissions:
+finops-inventory-s3-glue-s3-grant-consumer-s3tables-catalog-permissions:
 	@echo "Grant Consumer S3Tables Catalog Permissions"
 	$(eval consumer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/consumer/role --query Parameter.Value --output text))
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="$(consumer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-inventory\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"inventory\"}}" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/finops-inventory-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"finops_inventory_s3_glue_s3table\"}}" \
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished Consumer Project Configuration"
 
-splunk-grant-producer-s3tables-catalog-permissions:
+finops-usage-splunk-glue-s3-grant-producer-s3tables-catalog-permissions:
 	@echo "Grant Producer S3Tables Catalog Permissions"
 	$(eval producer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="$(producer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-splunk\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"splunk\"}}" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/finops-usage-splunk-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"finops_usage_splunk_glue_s3table\"}}" \
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished granting Producer S3Tables Catalog Permissions"
 
-splunk-grant-consumer-s3tables-catalog-permissions:
+finops-usage-splunk-glue-s3-grant-consumer-s3tables-catalog-permissions:
 	@echo "Granting Consumer S3Tables Catalog Permissions"
 	$(eval consumer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/consumer/role --query Parameter.Value --output text))
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="$(consumer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-splunk\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"splunk\"}}" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/finops-usage-splunk-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"finops_usage_splunk_glue_s3table\"}}" \
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished Granting Consumer S3Tables Catalog Permissions"
 
-price-grant-producer-s3tables-catalog-permissions:
+equity-price-s3-glue-s3-grant-producer-s3tables-catalog-permissions:
 	@echo "Grant Producer S3Tables Catalog Permissions"
 	$(eval producer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
 	aws lakeformation grant-permissions \
     	--principal DataLakePrincipalIdentifier="$(producer_role_arn)" \
-    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/$(APP_NAME)-$(ENV_NAME)-price\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"price\"}}" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/equity-price-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"equity_price_s3_glue_s3table\"}}" \
     	--permissions ALL \
     	--region "$(AWS_PRIMARY_REGION)"
 	@echo "Finished granting Producer S3Tables Catalog Permissions"
+
+equity-price-s3-glue-s3-grant-consumer-s3tables-catalog-permissions:
+	@echo "Grant Producer S3Tables Catalog Permissions"
+	$(eval consumer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/consumer/role --query Parameter.Value --output text))
+	aws lakeformation grant-permissions \
+    	--principal DataLakePrincipalIdentifier="$(consumer_role_arn)" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/equity-price-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"equity_price_s3_glue_s3table\"}}" \
+    	--permissions ALL \
+    	--region "$(AWS_PRIMARY_REGION)"
+	@echo "Finished granting Producer S3Tables Catalog Permissions"	
+
+equity-trade-s3-glue-s3-grant-producer-s3tables-catalog-permissions:
+	@echo "Grant Producer S3Tables Catalog Permissions"
+	$(eval producer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
+	aws lakeformation grant-permissions \
+    	--principal DataLakePrincipalIdentifier="$(producer_role_arn)" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/equity-trade-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"equity_trade_s3_glue_s3table\"}}" \
+    	--permissions ALL \
+    	--region "$(AWS_PRIMARY_REGION)"
+	@echo "Finished granting Producer S3Tables Catalog Permissions"
+
+equity-trade-s3-glue-s3-grant-consumer-s3tables-catalog-permissions:
+	@echo "Grant Producer S3Tables Catalog Permissions"
+	$(eval consumer_role_arn:=$(shell aws ssm --region $(AWS_PRIMARY_REGION) get-parameter --name /$(APP_NAME)/$(ENV_NAME)/sagemaker/producer/role --query Parameter.Value --output text))
+	aws lakeformation grant-permissions \
+    	--principal DataLakePrincipalIdentifier="$(consumer_role_arn)" \
+    	--resource "{\"Table\": {\"CatalogId\": \"$(AWS_ACCOUNT_ID):s3tablescatalog/equity-trade-s3-glue-s3table\", \"DatabaseName\": \"$(APP_NAME)\", \"Name\": \"equity_trade_s3_glue_s3table\"}}" \
+    	--permissions ALL \
+    	--region "$(AWS_PRIMARY_REGION)"
+	@echo "Finished granting Producer S3Tables Catalog Permissions"	
 
 #################### SageMaker Unified Studio Lakehouse Snowflake Connection for Producer ####################
 
@@ -1374,6 +1287,27 @@ update-kms-policy-for-lakehouse:
 	echo "✅ Successfully updated KMS key policy for SageMaker Lakehouse Federated Query"; \
 	echo "The SageMaker Studio Query Execution Role now has access to the KMS key"
 
+#################### Z-ETL Snowflake ####################
+
+deploy-equity-order-sf-zetl-fed:
+	@echo "Deploying Z-ETL Snowflake Data"
+	(cd iac/roots/z-etl/snowflake/equity-order-sf-zetl-fed; \
+		terraform init; \
+		terraform apply -auto-approve;)
+	@echo "Finished Deploying Z-ETL Snowflake Data"
+
+destroy-equity-order-sf-zetl-fed:
+	@echo "Destroying Z-ETL Snowflake Data"
+	(cd iac/roots/z-etl/snowflake/equity-order-sf-zetl-fed; \
+		terraform init; \
+		terraform destroy -auto-approve;)
+	@echo "Finished Destroying Z-ETL Snowflake Data"
+
+start-equity-order-sf-zetl-fed-data-generator:
+	@echo "Starting Snowflake Data Ingestion Job"
+	(aws glue start-job-run --region $(AWS_PRIMARY_REGION) --job-name equity-order-sf-zetl-fed-data-generator)
+	@echo "Started Snowflake Data Ingestion Job"
+
 #################### Datazone ####################
 
 deploy-datazone-domain:
@@ -1462,6 +1396,19 @@ deploy-quicksight-dataset:
 		terraform apply -auto-approve;)
 	@echo "Finished Deploying Quicksight Dataset"
 
+############## Spark Code Interpreter #############
+
+##### PREREQUISITES: deploy-kms-keys deploy-vpc #####
+
+deploy-spark-code-interpreter: 
+	@echo "Deploying Spark Code Interpreter"
+	$(ENV_PATH)utility-functions.sh exec_tf_for_env spark-code-interpreter
+	@echo "Finished Deploying Spark Code Interpreter"
+
+destroy-spark-code-interpreter:
+	@echo "Destroying Spark Code Interpreter"
+	TF_MODE=destroy $(ENV_PATH)utility-functions.sh exec_tf_for_env spark-code-interpreter
+	@echo "Destroying Spark Code Interpreter"
 
 #################### Deploy All ####################
 
@@ -1485,42 +1432,54 @@ destroy-data-pipeline:
 
 
 # Deploy all targets in the correct order, one make target at a time
-deploy-all: deploy-foundation-all deploy-idc-all deploy-domain-all deploy-projects-all deploy-glue-jars-all deploy-lake-formation-all deploy-athena-all deploy-billing-static-all deploy-billing-dynamic-all deploy-billing-cur-all deploy-inventory-static-all deploy-inventory-dynamic-all deploy-zetl-ddb-all deploy-splunk-all deploy-project-configuration-all deploy-datazone-all deploy-snowflake-connection-all deploy-snowflake-z-etl-all deploy-quicksight-subscription-all deploy-quicksight-all 
-deploy-foundation-all: deploy-kms-keys deploy-iam-roles deploy-buckets
-deploy-idc-all: deploy-idc-org
+# Deploy all targets in the correct order, one make target at a time
+deploy-all: deploy-foundation-all deploy-idc-all deploy-domain-all deploy-projects-all deploy-glue-jars-all deploy-lake-formation-all deploy-athena-all deploy-billing-static-all deploy-billing-dynamic-all deploy-billing-cur-all deploy-inventory-static-all deploy-inventory-dynamic-all deploy-splunk-all deploy-price-glue-all deploy-trade-glue-all deploy-trade-msk-all deploy-trade-flink-all deploy-zetl-ddb-all deploy-project-configuration-all deploy-datazone-all deploy-quicksight-subscription-all deploy-snowflake-connection-all deploy-snowflake-z-etl-all deploy-quicksight-all deploy-spark-code-interpreter-all
+deploy-foundation-all: deploy-kms-keys deploy-iam-roles deploy-buckets deploy-vpc build-msk-data-generator-lambda-layer-zip deploy-msk
+deploy-idc-all: deploy-idc-acc disable-mfa
 deploy-domain-all: deploy-domain-prereq deploy-domain
 deploy-projects-all: deploy-project-prereq deploy-producer-project deploy-consumer-project extract-producer-info extract-consumer-info
 deploy-glue-jars-all: deploy-glue-jars
 deploy-lake-formation-all: create-glue-s3tables-catalog register-s3table-catalog-with-lake-formation grant-default-database-permissions drop-default-database
-deploy-athena-all: deploy-athena 
-deploy-billing-static-all: deploy-billing grant-default-database-permissions drop-default-database start-billing-hive-job start-billing-iceberg-static-job start-billing-s3table-create-job start-billing-s3table-job grant-lake-formation-billing-s3-table-catalog start-billing-hive-data-quality-ruleset start-billing-iceberg-data-quality-ruleset
-deploy-billing-dynamic-all: upload-billing-dynamic-report-1 upload-billing-dynamic-report-2 grant-lake-formation-billing-iceberg-dynamic
-deploy-billing-cur-all: activate-cost-allocation-tags deploy-billing-cur 
-deploy-inventory-static-all: deploy-inventory grant-default-database-permissions drop-default-database start-inventory-hive-job start-inventory-iceberg-static-job start-inventory-s3table-create-job start-inventory-s3table-job grant-lake-formation-inventory-s3-table-catalog start-inventory-hive-data-quality-ruleset start-inventory-iceberg-data-quality-ruleset 
-deploy-inventory-dynamic-all: upload-inventory-dynamic-report-1 upload-inventory-dynamic-report-2 grant-lake-formation-inventory-iceberg-dynamic
-deploy-zetl-ddb-all: deploy-z-etl-dynamodb-data-prereq upload-z-etl-dynamodb-data deploy-z-etl-dynamodb
-deploy-splunk-all: deploy-network deploy-splunk grant-default-database-permissions drop-default-database start-splunk-iceberg-static-job start-splunk-s3table-create-job start-splunk-s3table-job grant-lake-formation-splunk-s3-table-catalog
-deploy-project-configuration-all: deploy-project-config billing-grant-producer-s3tables-catalog-permissions inventory-grant-producer-s3tables-catalog-permissions splunk-grant-producer-s3tables-catalog-permissions 
+deploy-athena-all: deploy-athena
+deploy-billing-static-all: deploy-finops-billing-s3-glue-s3 grant-default-database-permissions drop-default-database start-finops-billing-s3-glue-s3-hive-job start-finops-billing-s3-glue-s3-iceberg-static-job start-finops-billing-s3-glue-s3table-job grant-lake-formation-finops-billing-s3-glue-s3table-catalog start-finops-billing-s3-glue-s3-hive-data-quality-ruleset 
+deploy-billing-dynamic-all: upload-billing-s3-glue-s3-iceberg-dynamic-report-1 upload-billing-s3-glue-s3-iceberg-dynamic-report-2 grant-lake-formation-billing-s3-glue-s3-iceberg-dynamic
+deploy-billing-cur-all: activate-finops-s3-glue-s3-cost-allocation-tags deploy-finops-s3-glue-s3-billing-cur
+deploy-inventory-static-all: deploy-finops-inventory-s3-glue-s3 grant-default-database-permissions drop-default-database start-finops-inventory-s3-glue-s3-hive-job start-finops-inventory-s3-glue-s3-iceberg-static-job start-finops-inventory-s3-glue-s3table-job grant-lake-formation-inventory-s3-glue-s3table-catalog start-inventory-s3-glue-s3-hive-data-quality-ruleset 
+deploy-inventory-dynamic-all: upload-inventory-s3-glue-s3-iceber-dynamic-report-1 upload-inventory-s3-glue-s3-iceber-dynamic-report-2 grant-lake-formation-inventory-s3-glue-s3-iceberg-dynamic
+deploy-splunk-all: deploy-finops-usage-splunk-glue-s3 grant-default-database-permissions drop-default-database start-finops-usage-splunk-glue-s3-iceberg-job start-finops-usage-splunk-glue-s3table-job grant-lake-formation-finops-usage-splunk-glue-s3table-catalog
+deploy-price-glue-all: deploy-equity-price-s3-glue-s3 grant-default-database-permissions drop-default-database start-equity-price-s3-glue-s3-hive-job start-equity-price-s3-glue-s3-iceberg-job start-equity-price-s3-glue-s3table-job grant-lake-formation-equity-price-s3-glue-s3table-catalog start-equity-price-s3-glue-s3-hive-data-quality-ruleset
+deploy-trade-glue-all: deploy-equity-trade-s3-glue-s3 grant-default-database-permissions drop-default-database start-equity-trade-s3-glue-s3-hive-job start-equity-trade-s3-glue-s3-iceberg-job start-equity-trade-s3-glue-s3table-job grant-lake-formation-equity-trade-s3-glue-s3table-catalog start-equity-trade-s3-glue-s3-hive-data-quality-ruleset
+deploy-trade-msk-all: deploy-equity-trade-msk-glue-s3 start-equity-trade-msk-glue-s3-job run-equity-trade-msk-glue-s3-test-harness
+deploy-trade-flink-all: build-equity-trade-msk-flink-msk-app deploy-equity-trade-msk-flink-msk run-equity-trade-msk-flink-msk-test-harness
+deploy-zetl-ddb-all: deploy-equity-order-dd-zetl-s3-prereq deploy-equity-order-dd-zetl-s3
+deploy-project-configuration-all: deploy-project-config finops-billing-s3-glue-s3-grant-producer-s3tables-catalog-permissions finops-inventory-s3-glue-s3-grant-producer-s3tables-catalog-permissions finops-usage-splunk-glue-s3-grant-producer-s3tables-catalog-permissions equity-price-s3-glue-s3-grant-producer-s3tables-catalog-permissions equity-trade-s3-glue-s3-grant-producer-s3tables-catalog-permissions
 deploy-datazone-all: deploy-datazone-domain deploy-datazone-project-prereq deploy-datazone-producer-project deploy-datazone-consumer-project deploy-datazone-custom-project
-deploy-snowflake-connection-all: deploy-snowflake-connection grant-lake-formation-snowflake-catalog update-kms-policy-for-lakehouse
-deploy-snowflake-z-etl-all: deploy-z-etl-snowflake start-snowflake-job 
+deploy-snowflake-connection-all: deploy-snowflake-connection 
+deploy-snowflake-z-etl-all: deploy-equity-order-sf-zetl-fed start-equity-order-sf-zetl-fed-data-generator grant-lake-formation-snowflake-catalog update-kms-policy-for-snowflake-lakehouse
 deploy-quicksight-subscription-all: deploy-quicksight-subscription
 deploy-quicksight-all: deploy-quicksight-dataset
+deploy-spark-code-interpreter-all: deploy-spark-code-interpreter
 
 #################### Destroy All ####################
 
 # Destroy all targets in the correct order, one make target at a time
-destroy-all: destroy-snowflake-connection-all destroy-datazone-all destroy-project-configuration-all destroy-splunk-all destroy-zetl-ddb-all destroy-inventory-all destroy-billing-cur-all destroy-billing-all destroy-athena-all destroy-projects-all destroy-domain-all destroy-idc-all destroy-foundation-all
-destroy-foundation-all: destroy-buckets destroy-iam-roles destroy-kms-keys
+destroy-all: destroy-spark-code-interpreter-all destroy-snowflake-z-etl-all destroy-snowflake-connection-all destroy-datazone-all destroy-project-configuration-all destroy-zetl-ddb-all destroy-trade-flink-all destroy-trade-msk-all destroy-trade-glue-all destroy-price-glue-all destroy-splunk-all destroy-inventory-all destroy-billing-cur-all destroy-billing-all destroy-athena-all destroy-projects-all destroy-domain-all destroy-idc-all destroy-foundation-all
+destroy-foundation-all: destroy-msk destroy-vpc destroy-buckets destroy-iam-roles destroy-kms-keys
 destroy-idc-all: destroy-idc-acc
 destroy-domain-all: destroy-domain destroy-domain-prereq
-destroy-projects-all: destroy-consumer-project destroy-producer-project  destroy-project-prereq
+destroy-projects-all: destroy-consumer-project destroy-producer-project destroy-project-prereq
 destroy-athena-all: destroy-athena
-destroy-billing-all: destroy-billing
-destroy-billing-cur-all: destroy-billing-cur
-destroy-inventory-all: destroy-inventory
-destroy-zetl-ddb-all: destroy-z-etl-dynamodb destroy-z-etl-dynamodb-data-prereq
-destroy-splunk-all: destroy-splunk
+destroy-billing-all: destroy-finops-billing-s3-glue-s3
+destroy-billing-cur-all: destroy-finops-s3-glue-s3-billing-cur
+destroy-inventory-all: destroy-finops-inventory-s3-glue-s3
+destroy-splunk-all: destroy-finops-usage-splunk-glue-s3
+destroy-price-glue-all: destroy-equity-price-s3-glue-s3
+destroy-trade-glue-all: destroy-equity-trade-s3-glue-s3
+destroy-trade-msk-all: destroy-equity-trade-msk-glue-s3
+destroy-trade-flink-all: destroy-equity-trade-msk-flink-msk
+destroy-zetl-ddb-all: destroy-equity-order-dd-zetl-s3 destroy-equity-order-dd-zetl-s3-prereq 
 destroy-project-configuration-all: destroy-project-config
-destroy-datazone-all: destroy-datazone-custom-project destroy-datazone-consumer-project  destroy-datazone-producer-project destroy-datazone-project-prereq destroy-datazone-domain
-destroy-smus-snowflake-connection-all: destroy-snowflake-connection
+destroy-datazone-all: destroy-datazone-custom-project destroy-datazone-consumer-project destroy-datazone-producer-project destroy-datazone-project-prereq destroy-datazone-domain
+destroy-snowflake-connection-all: destroy-snowflake-connection
+destroy-snowflake-z-etl-all: destroy-equity-order-sf-zetl-fed
+destroy-spark-code-interpreter-all: destroy-spark-code-interpreter
