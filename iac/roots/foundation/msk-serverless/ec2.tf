@@ -51,6 +51,7 @@ resource "aws_instance" "msk_client" {
   tags = {
     Name = "${var.APP}-${var.ENV}-msk-client"
   }
+  depends_on = [aws_msk_serverless_cluster.cluster]
 }
 
 resource "aws_iam_role" "client_instance_role" {
