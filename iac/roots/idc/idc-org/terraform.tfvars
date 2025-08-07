@@ -1,11 +1,11 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-APP                        = "###APP_NAME###"
-ENV                        = "###ENV_NAME###"
-AWS_PRIMARY_REGION         = "###AWS_PRIMARY_REGION###"
-AWS_SECONDARY_REGION       = "###AWS_SECONDARY_REGION###"
-SSM_KMS_KEY_ALIAS          = "###APP_NAME###-###ENV_NAME###-systems-manager-secret-key"
+APP                        = "miw"
+ENV                        = "snd"
+AWS_PRIMARY_REGION         = "us-east-1"
+AWS_SECONDARY_REGION       = "us-east-1"
+SSM_KMS_KEY_ALIAS          = "miw-snd-systems-manager-secret-key"
 PERMISSION_SETS = {
   "Admin" = {
     name             = "Admin"
