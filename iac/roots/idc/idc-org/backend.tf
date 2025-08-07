@@ -3,8 +3,8 @@
 
 terraform {
   backend "s3" {
-    bucket         = "sowj-633391536196-us-east-1"
-    dynamodb_table = "sowj-lock"
+    bucket         = "sndlh-633391536196-us-east-1"
+    dynamodb_table = "sndlh-lock"
     region         = "us-east-1"
     key            = "snd/idc-org/terraform.tfstate"
     encrypt        = true
