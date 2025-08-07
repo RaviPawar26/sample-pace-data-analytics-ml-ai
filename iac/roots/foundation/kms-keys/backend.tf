@@ -3,7 +3,7 @@
 
 terraform {
   backend "s3" {
-    bucket         = "sndlh-904233109241-us-east-1"
+    bucket         = "sndlh-633391536196-us-east-1"
     key            = "snd/kms-keys/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = false
