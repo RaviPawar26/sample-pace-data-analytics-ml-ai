@@ -503,7 +503,7 @@ create-glue-s3tables-catalog:
 # 	aws glue create-catalog \
 #         --cli-input-json '{"Name": "s3tablescatalog", "CatalogInput": { "FederatedCatalog": { "Identifier": "arn:aws:s3tables:us-east-1:904233109241:bucket/*", "ConnectionName": "aws:s3tables" }, "CreateDatabaseDefaultPermissions": [], "CreateTableDefaultPermissions": [] } }' \
 #         --region "us-east-1"
-
+    set +ex 
     aws glue create-catalog \
       --name "s3tablescatalog" \
       --catalog-input '{
