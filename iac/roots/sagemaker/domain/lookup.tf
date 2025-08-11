@@ -21,6 +21,21 @@ data "aws_ssm_parameter" "smus_projects_bucket_s3_url" {
   name = "/${var.APP}/${var.ENV}/smus_projects_bucket_s3_url"
 }
 
+data "aws_ssm_parameter" "smus_domain_vpc_id" {
+
+  name = "/${var.APP}/${var.ENV}/vpc_id"
+}
+
+data "aws_ssm_parameter" "smus_domain_private_subnet_ids" {
+
+  name = "/${var.APP}/${var.ENV}/vpc_private_subnet_ids"
+}
+
+data "aws_ssm_parameter" "smus_domain_availability_zone_names" {
+
+  name = "/${var.APP}/${var.ENV}/vpc_availability_zone_names"
+}
+
 # Get the JSON string from SSM Parameter Store
 data "aws_ssm_parameter" "user_mappings" {
   name = "/${var.APP}/${var.ENV}/identity-center/users"
