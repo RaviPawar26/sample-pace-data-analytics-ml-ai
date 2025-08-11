@@ -495,24 +495,25 @@ deploy-glue-jars:
 #################### Lake Formation ####################
 
 set-up-lake-formation-admin-role:
-	aws lakeformation put-data-lake-settings \
+  aws lakeformation put-data-lake-settings \
 		--cli-input-json "{\"DataLakeSettings\": {\"DataLakeAdmins\": [{\"DataLakePrincipalIdentifier\": \"arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}\"}]}}" \
 		--region "${AWS_PRIMARY_REGION}"
 		
 create-glue-s3tables-catalog:
   aws glue create-catalog \
-      --name "s3tablescatalog" \
-      --catalog-input '{
-          "Description": "Catalog for S3 tables",
-          "FederatedCatalog": {
-              "Identifier": "arn:aws:s3tables:us-east-1:904233109241:bucket/*",
-              "ConnectionName": "aws:s3tables"
-          },
-          "CreateDatabaseDefaultPermissions": [],
-          "CreateTableDefaultPermissions": [],
-          "AllowFullTableExternalDataAccess": "True"
-      }' \
-      --region "us-east-1"
+    --name "s3tablescatalog" \
+    --catalog-input '{
+        "Description": "Catalog for S3 tables",
+        "FederatedCatalog": {
+            "Identifier": "arn:aws:s3tables:us-east-1:904233109241:bucket/*",
+            "ConnectionName": "aws:s3tables"
+        },
+        "CreateDatabaseDefaultPermissions": [],
+        "CreateTableDefaultPermissions": [],
+        "AllowFullTableExternalDataAccess": "True"
+    }' \
+    --region "us-east-1"
+
 
 register-s3table-catalog-with-lake-formation:
 	aws lakeformation register-resource \
