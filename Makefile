@@ -13,7 +13,7 @@ TF_S3_BACKEND_NAME="cargill"
 
 #################### Global Constants ####################
 
-ADMIN_ROLE = "service-role/codebuild-minerva-lh-snd-iaac-service-role"
+ADMIN_ROLE = Admin
 
 #################### Init Wizard ####################
 
@@ -501,8 +501,8 @@ set-up-lake-formation-admin-role:
 		
 create-glue-s3tables-catalog:
 	aws glue create-catalog \
-        --cli-input-json '{"Name": "s3tablescatalog", "CatalogInput": { "FederatedCatalog": { "Identifier": \"arn:aws:s3tables:${AWS_PRIMARY_REGION}:${AWS_ACCOUNT_ID}:bucket/*\", "ConnectionName": "aws:s3tables" }, "CreateDatabaseDefaultPermissions": [], "CreateTableDefaultPermissions": [] } }' \
-        --region "${AWS_PRIMARY_REGION}"
+        --cli-input-json '{"Name": "s3tablescatalog", "CatalogInput": { "FederatedCatalog": { "Identifier": "arn:aws:s3tables:us-east-1:904233109241:bucket/*", "ConnectionName": "aws:s3tables" }, "CreateDatabaseDefaultPermissions": [], "CreateTableDefaultPermissions": [] } }' \
+        --region "\${AWS_PRIMARY_REGION}\"
 
 register-s3table-catalog-with-lake-formation:
 	aws lakeformation register-resource \
