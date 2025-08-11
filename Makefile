@@ -496,11 +496,11 @@ deploy-glue-jars:
 
 set-up-lake-formation-admin-role:
   aws lakeformation put-data-lake-settings \
-		--cli-input-json "{\"DataLakeSettings\": {\"DataLakeAdmins\": [{\"DataLakePrincipalIdentifier\": \"arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}\"}]}}" \
+	  --cli-input-json "{\"DataLakeSettings\": {\"DataLakeAdmins\": [{\"DataLakePrincipalIdentifier\": \"arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ADMIN_ROLE}\"}]}}" \
 		--region "${AWS_PRIMARY_REGION}"
 		
 create-glue-s3tables-catalog:
-    aws glue create-catalog \
+  aws glue create-catalog \
     --name "s3tablescatalog" \
     --catalog-input '{
         "Description": "Catalog for S3 tables",
@@ -513,7 +513,7 @@ create-glue-s3tables-catalog:
         "AllowFullTableExternalDataAccess": "True"
     }' \
     --region "us-east-1"
-    
+
 register-s3table-catalog-with-lake-formation:
 	aws lakeformation register-resource \
         --resource-arn "arn:aws:s3tables:${AWS_PRIMARY_REGION}:${AWS_ACCOUNT_ID}:bucket/*" \
