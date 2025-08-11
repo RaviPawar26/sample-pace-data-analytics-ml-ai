@@ -1,13 +1,12 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-AWS_ACCOUNT_ID                  = "###AWS_ACCOUNT_ID###"
-APP                             = "###APP_NAME###"
-ENV                             = "###ENV_NAME###"
-AWS_PRIMARY_REGION              = "###AWS_PRIMARY_REGION###"
-AWS_SECONDARY_REGION            = "###AWS_SECONDARY_REGION###"
-SSM_KMS_KEY_ALIAS               = "###APP_NAME###-###ENV_NAME###-systems-manager-secret-key"
+AWS_ACCOUNT_ID                  = "904233109241"
+APP                             = "mit"
+ENV                             = "snd"
+AWS_PRIMARY_REGION              = "us-east-1"
+AWS_SECONDARY_REGION            = "us-west-2"
+SSM_KMS_KEY_ALIAS               = "mit-snd-systems-manager-secret-key"
 DOMAIN_NAME                     = "Exchange"
 
 PROJECT_BLUEPRINT               = "DefaultDataLake"
-

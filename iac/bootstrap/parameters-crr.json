@@ -1,6 +1,6 @@
 [
-    "bucketName=###TF_S3_BACKEND_NAME###",
-    "secondaryRegion=###AWS_SECONDARY_REGION###",
+    "bucketName=mit-snd-tf-back-end",
+    "secondaryRegion=us-west-2",
     "enableCRR=true",
     "enableLocking=true",
     "enableBucketAccessLogs=false"

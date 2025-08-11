@@ -3,10 +3,10 @@
 
 terraform {
   backend "s3" {
-    bucket         = "###TF_S3_BACKEND_NAME###-###AWS_ACCOUNT_ID###-###AWS_DEFAULT_REGION###"
-    dynamodb_table = "###TF_S3_BACKEND_NAME###-lock"
-    region         = "###AWS_PRIMARY_REGION###"
-    key            = "###ENV_NAME###/idc/idc-org/terraform.tfstate"
+    bucket         = "mit-snd-tf-back-end-904233109241-us-east-1"
+    dynamodb_table = "mit-snd-tf-back-end-lock"
+    region         = "us-east-1"
+    key            = "snd/idc/idc-org/terraform.tfstate"
     encrypt        = true
   }
 }

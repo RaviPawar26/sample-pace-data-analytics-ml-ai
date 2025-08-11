@@ -1,12 +1,12 @@
 // Copyright 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-APP                        = "###APP_NAME###"
-ENV                        = "###ENV_NAME###"
-AWS_PRIMARY_REGION         = "###AWS_PRIMARY_REGION###"
-AWS_SECONDARY_REGION       = "###AWS_SECONDARY_REGION###"
-SSM_KMS_KEY_ALIAS          = "###APP_NAME###-###ENV_NAME###-systems-manager-secret-key"
-LAMBDA_BUCKET              = "###APP_NAME###-###ENV_NAME###-lambda-bucket"
+APP                        = "mit"
+ENV                        = "snd"
+AWS_PRIMARY_REGION         = "us-east-1"
+AWS_SECONDARY_REGION       = "us-west-2"
+SSM_KMS_KEY_ALIAS          = "mit-snd-systems-manager-secret-key"
+LAMBDA_BUCKET              = "mit-snd-lambda-bucket"
 PERMISSION_SETS = {
   "Admin" = {
     name             = "Admin"

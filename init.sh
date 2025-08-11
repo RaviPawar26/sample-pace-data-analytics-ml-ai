@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +ex
 
 # Copyright 2025 Amazon.com and its affiliates; all rights reserved.
 # SPDX-License-Identifier: LicenseRef-.amazon.com.-AmznSL-1.0

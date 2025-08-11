@@ -3,13 +3,13 @@
 
 SHELL := /usr/bin/env bash -euo pipefail -c
 
-APP_NAME = ###APP_NAME###
-ENV_NAME = ###ENV_NAME###
-AWS_ACCOUNT_ID = ###AWS_ACCOUNT_ID###
-AWS_DEFAULT_REGION = ###AWS_DEFAULT_REGION###
-AWS_PRIMARY_REGION = ###AWS_PRIMARY_REGION###
-AWS_SECONDARY_REGION = ###AWS_SECONDARY_REGION###
-TF_S3_BACKEND_NAME = ###TF_S3_BACKEND_NAME###
+APP_NAME="mit"
+AWS_ACCOUNT_ID="904233109241"
+AWS_DEFAULT_REGION="us-east-1"
+ENV_NAME="snd"
+AWS_PRIMARY_REGION="us-east-1"
+AWS_SECONDARY_REGION="us-west-2"
+TF_S3_BACKEND_NAME="cargill"
 
 #################### Global Constants ####################
 
