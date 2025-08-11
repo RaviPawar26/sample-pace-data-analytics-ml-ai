@@ -502,7 +502,7 @@ set-up-lake-formation-admin-role:
 create-glue-s3tables-catalog:
 	aws glue create-catalog \
         --cli-input-json '{"Name": "s3tablescatalog", "CatalogInput": { "FederatedCatalog": { "Identifier": "arn:aws:s3tables:us-east-1:904233109241:bucket/*", "ConnectionName": "aws:s3tables" }, "CreateDatabaseDefaultPermissions": [], "CreateTableDefaultPermissions": [] } }' \
-        --region "\${AWS_PRIMARY_REGION}\"
+        --region "us-east-1"
 
 register-s3table-catalog-with-lake-formation:
 	aws lakeformation register-resource \
