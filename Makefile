@@ -516,7 +516,7 @@ create-glue-s3tables-catalog:
         "CreateDatabaseDefaultPermissions": [],
         "CreateTableDefaultPermissions": []
       }' \
-      --region us-east-1
+      --region "us-east-1"
 
 
 register-s3table-catalog-with-lake-formation:
