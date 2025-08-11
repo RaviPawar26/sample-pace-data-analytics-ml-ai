@@ -513,8 +513,7 @@ create-glue-s3tables-catalog:
         "AllowFullTableExternalDataAccess": "True"
     }' \
     --region "us-east-1"
-
-
+    
 register-s3table-catalog-with-lake-formation:
 	aws lakeformation register-resource \
         --resource-arn "arn:aws:s3tables:${AWS_PRIMARY_REGION}:${AWS_ACCOUNT_ID}:bucket/*" \
