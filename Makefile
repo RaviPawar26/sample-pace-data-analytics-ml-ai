@@ -500,7 +500,7 @@ set-up-lake-formation-admin-role:
 		--region "${AWS_PRIMARY_REGION}"
 		
 create-glue-s3tables-catalog:
-  aws glue create-catalog \
+    aws glue create-catalog \
     --name "s3tablescatalog" \
     --catalog-input '{
         "Description": "Catalog for S3 tables",
