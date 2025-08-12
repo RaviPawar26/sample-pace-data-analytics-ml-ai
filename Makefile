@@ -430,10 +430,11 @@ create-glue-s3tables-catalog:
 
 register-s3table-catalog-with-lake-formation:
 	aws lakeformation register-resource \
-        --resource-arn "arn:aws:s3tables:${AWS_PRIMARY_REGION}:${AWS_ACCOUNT_ID}:bucket/*" \
-        --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APP_NAME}-${ENV_NAME}-lakeformation-service-role" \
+        --resource-arn "arn:aws:s3tables:us-east-1:904233109241:bucket/*" \
+        --role-arn "arn:aws:iam::904233109241:role/mit-snd-lakeformation-service-role" \
         --with-federation \
-        --region "${AWS_PRIMARY_REGION}"
+        --region "us-east-1"
+  echo $?
 
 grant-default-database-permissions:
 	@echo "Checking default database and granting Lake Formation permissions"
