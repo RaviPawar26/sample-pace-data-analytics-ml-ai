@@ -433,7 +433,7 @@ register-s3table-catalog-with-lake-formation:
         --resource-arn \"arn:aws:s3tables:us-east-1:904233109241:bucket/*\" \
         --role-arn \"arn:aws:iam::904233109241:role/mit-snd-lakeformation-service-role\" \
         --with-federation \
-        --region \"us-east-1\"
+        --region "us-east-1"
 
 grant-default-database-permissions:
 	@echo "Checking default database and granting Lake Formation permissions"
